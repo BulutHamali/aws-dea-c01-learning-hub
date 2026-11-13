@@ -9,10 +9,14 @@
 - [ ] Explain how partitioning, columnar formats, and compaction affect a query.
 - [ ] Diagnose a bad load, a stale catalog entry, and a delayed stream.
 - [ ] Explain IAM, KMS, and Lake Formation with a concrete access example.
-- [ ] Complete both [workshops](labs/README.md) and retry missed [challenges](practice/pipeline-challenges.md).
+- [ ] Complete the three [workshops](labs/README.md) and retry missed [challenges](practice/pipeline-challenges.md).
 
-| Date | Scenario or guide | What I missed | Requirement that changes the choice | Retry result |
-|---|---|---|---|---|
-| | | | | |
-| | | | | |
-| | | | | |
+- [ ] Finish the [timed set](practice/timed-set.md), including a review of correct guesses.
+- [ ] Revisit every missed task using the [task map](EXAM-MAP.md#task-by-task-study-map).
+- [ ] Try AWS’s official preparation material for an independent readiness check.
+
+| Date | Exam task and question | What I missed | Deciding requirement | Two-day retry | One-week retry |
+|---|---|---|---|---|---|
+| | | | | | |
+| | | | | | |
+| | | | | | |

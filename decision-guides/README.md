@@ -17,3 +17,14 @@ Read the workload first. Identify its source, latency, required transformations,
 | Restrict which columns groups can query in a governed lake | [Lake Formation](../topic-guides/governance.md) | KMS controls key use. Macie can discover sensitive content |
 | Find out who read an S3 object | [CloudTrail data events](../topic-guides/governance.md) | To alert on late pipeline output, publish a CloudWatch metric |
 | Keep records for years while lowering storage costs | [S3 Lifecycle](../topic-guides/s3.md) | Retrieval deadlines determine the archive class. Deletion protection requires a separate retention control |
+
+## Compare newer exam topics
+
+| Requirement | First choice | Boundary to remember |
+|---|---|---|
+| Keep history of committed analytical table changes on S3 | [Iceberg](../topic-guides/iceberg.md) | Parquet is the file format. Iceberg tracks table state |
+| Publish ownership and dataset definitions for business users | [SageMaker Catalog](../topic-guides/catalog-and-unified-studio.md) | Glue Data Catalog holds technical metadata for query engines |
+| Find items similar in meaning across a large collection | [Vector search](../topic-guides/vectors-and-llms.md) | Evaluate latency and retrieval recall together |
+| Track resource settings over time | [AWS Config](../topic-guides/privacy-and-audit.md) | CloudTrail records API activity. CloudWatch Logs stores application logs |
+
+Follow the branching examples in the [visual decision maps](visual-maps.md).

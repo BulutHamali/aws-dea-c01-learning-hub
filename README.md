@@ -6,7 +6,7 @@ A practical study path for **AWS Certified Data Engineer – Associate (DEA-C01)
 
 | If you have… | Start here | What to focus on |
 |---|---|---|
-| Four weeks | [Four-week plan](learning-paths/4-week-plan.md) | Work through all four domains and practice every week |
+| Four weeks | [Four-week plan](learning-paths/4-week-plan.md) | Follow the weekly path through 23 guides and practice every week |
 | One to two weeks | [Diagnostic](practice/diagnostic.md) and [topic index](topic-guides/README.md) | Review the guides tied to your weakest answers |
 | A few days | [Decision guides](decision-guides/README.md) | Explain what requirement makes each service the best fit |
 | A study session today | [Pipeline challenges](practice/pipeline-challenges.md) | Write your reasoning before revealing the answer |
@@ -24,6 +24,14 @@ New to data engineering? [Start here](START-HERE.md). Coming from SAA-C03? Begin
 
 See the [full exam map](EXAM-MAP.md) and the [official AWS exam guide](https://docs.aws.amazon.com/aws-certification/latest/data-engineer-associate-01.html).
 
+## Learn, practice, and check your readiness
+
+| Learn | Practice | Check |
+|---|---|---|
+| [Glossary and first pipeline](START-HERE.md) | [Six pipeline challenges](practice/pipeline-challenges.md) | [Eight-question diagnostic](practice/diagnostic.md) |
+| [Visual decision maps](decision-guides/visual-maps.md) | [Three workshops with expected results](labs/README.md) | [32-question timed practice set](practice/timed-set.md) |
+| [Task-by-task exam map](EXAM-MAP.md#task-by-task-study-map) | [20 recall cards](practice/recall-cards.md) | [Progress tracker](CHECKLIST.md) |
+
 ## How to study
 
 1. Read a topic guide. Explain the service and its inputs and outputs from memory.
@@ -33,6 +41,8 @@ See the [full exam map](EXAM-MAP.md) and the [official AWS exam guide](https://d
 
 The [workshops](labs/README.md) use fictional datasets and can be completed without an AWS account. The diagnostic and challenges use original practice scenarios. This is an independent study resource. Use AWS documentation to verify feature availability, limits, pricing, and exam scope.
 
+For a daily session template, spaced review, and exam pacing, see the [study method](learning-paths/study-method.md).
+
 ## Sources and attribution
 
-[Laura Galera’s AWS Data Engineer Associate notes](https://github.com/lauragalera/aws-data-engineer-associate-notes), accessed through [BulutHamali’s fork](https://github.com/BulutHamali/aws-data-engineer-associate-notes), helped identify topics. The [AWS SAA-C03 Learning Hub](https://github.com/BulutHamali/aws-saa-c03-learning-hub) informed the study structure. The explanations, diagrams, and exercises here were written for this repository. Each guide links to AWS documentation.
+The [official AWS DEA-C01 exam guide](https://docs.aws.amazon.com/aws-certification/latest/data-engineer-associate-01.html) determines the study objectives. The [AWS SAA-C03 Learning Hub](https://github.com/BulutHamali/aws-saa-c03-learning-hub) informed the study structure. [Laura Galera’s notes](https://github.com/lauragalera/aws-data-engineer-associate-notes), accessed through [BulutHamali’s fork](https://github.com/BulutHamali/aws-data-engineer-associate-notes), were an initial reference for the first version. Each topic guide links to relevant AWS documentation.

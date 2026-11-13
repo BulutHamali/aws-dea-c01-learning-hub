@@ -4,6 +4,8 @@
 
 ## The idea
 
+A badge identifies who is at the door. The door’s access list decides whether the badge can enter, and a locked cabinet inside still needs its own key. Map those layers to identity, data permissions, and KMS key authorization.
+
 Follow the identity that actually executes the operation. A successful launch from your console only proves that your identity could start the job.
 
 ## How to decide
@@ -14,6 +16,15 @@ Follow the identity that actually executes the operation. A successful launch fr
 | **KMS** | A role reading SSE-KMS data needs applicable decrypt authorization. Cross-account access can also require a key policy that authorizes the external account or role. |
 | **Secrets Manager** | Store and rotate supported database credentials outside the job code. Grant the execution role access to the specific secret. |
 | **Network path** | Verify route and endpoint reachability, security groups, and DNS for private sources. Use TLS to protect traffic in transit. |
+
+## Read an access failure in order
+
+1. Confirm the principal and its role trust relationship. A role needs to be assumable by the intended service or caller.
+2. Check the API and resource authorization, including relevant explicit denies, endpoint policies, and bucket policies. Confirm any necessary table grants.
+3. Verify KMS permissions when customer-managed keys protect data or secrets.
+4. For network timeouts, test routes, endpoint reachability, security groups, and DNS. Look for a connection error before widening access.
+
+Use database roles and grants for SQL privileges. Secrets Manager can manage supported credential rotation. Parameter Store can hold configuration values and SecureString parameters. Decide who can read each secret or parameter and which key is used.
 
 ## Common mistake
 

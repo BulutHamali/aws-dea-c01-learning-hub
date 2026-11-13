@@ -4,6 +4,8 @@
 
 ## The idea
 
+Picture a cabinet with one drawer per day. A date filter selects drawers. Inside, a columnar layout lets you pull the measurement values without reading every description field.
+
 The bytes a query has to read depend on the file format, the partition filter, and the size and number of files.
 
 ## How to decide

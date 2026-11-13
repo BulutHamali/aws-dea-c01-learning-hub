@@ -57,3 +57,19 @@ SELECT id, reads FROM target ORDER BY id;
 Both executions return R01 with 200, R02 with 300, and R03 with 500. The ranking ensures one input row per target key. The upsert adds missing IDs and updates existing IDs. If older batches can arrive after newer batches, store a source version on the target and condition updates on it.
 
 </details>
+
+## Workshop 3 — Estimate what a query can skip
+
+A year of daily telemetry is stored in S3. For this exercise, assume 360 days, one equal-sized file per day, and 12 equally sized columns. A report reads two columns and asks for the most recent 30 days. Assume an engine can prune the unused dates and columns and ignore compression and metadata overhead.
+
+1. Estimate how much data the report reads from unpartitioned CSV.
+2. Estimate the proportion read with date partitions and CSV files.
+3. Estimate the proportion read after converting the partitioned table to Parquet.
+4. Explain why the same factors would be harder to estimate for production data.
+
+<details>
+<summary>Expected result</summary>
+
+The simplified baseline reads 100% of the data. Date pruning reduces the scan to 30/360, about 8.3%. Column pruning reduces that to 30/360 × 2/12, about 1.4% of the original logical data in this model. Actual scanned bytes depend on compression, column widths, file layout, query predicates, and engine behavior. Use Athena query statistics to measure the difference on equivalent queries.
+
+</details>

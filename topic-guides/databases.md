@@ -13,6 +13,7 @@ Describe the most important read and write before choosing a data store. Include
 | **RDS and Aurora** | Serve transactional workloads that need relational constraints, joins, or an existing SQL engine. |
 | **DynamoDB** | Serve predictable key-based access at low latency. Choose partition and sort keys based on actual queries and traffic distribution. |
 | **Redshift** | Run analytical aggregations and repeated joins over warehouse tables. |
+| **DynamoDB TTL** | Set a per-item expiration timestamp for asynchronous cleanup. Filter expired items if they must disappear from reads immediately. |
 | **Specialized stores** | Consider OpenSearch for text search and Neptune for graph traversal when that access pattern is central to the workload. |
 
 ## Common mistake

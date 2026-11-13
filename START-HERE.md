@@ -32,3 +32,22 @@ Know basic SQL filters, joins, aggregation, and window functions. If AWS is new 
 **Recall check.** If the curated Parquet objects exist in S3 but Athena has no table definition, which layer is missing? The metadata layer. The data and its catalog entry are separate.
 
 Next → [Four-week plan](learning-paths/4-week-plan.md)
+
+## Terms that come up in scenarios
+
+| Term | Plain-English meaning |
+|---|---|
+| Consumer lag | How far a reader is behind the newest records available in a stream |
+| Fan-out | Give more than one consumer its own copy or read path for an event feed |
+| Checkpoint | A durable record of progress used to resume processing |
+| Grain | What one row represents, such as one sample per day |
+| Data skew | An uneven distribution of records or work, such as one device generating most of the events |
+| Partition pruning | Skip file groups whose partition values cannot match the query |
+| Column pruning | Read only the columns the query needs from a suitable format |
+| Schema | The expected fields, types, and structure of a dataset |
+| Lineage | The record of where data came from and how it changed |
+| Materialized view | Stored results of a query that are refreshed according to the engine’s supported behavior |
+| Dead-letter queue | A destination for messages that failed processing repeatedly |
+| Data residency | Where data and its copies are physically stored |
+| Least privilege | Give an identity only the access needed to do its job |
+| Embedding | A numeric representation used to compare the similarity of items |
