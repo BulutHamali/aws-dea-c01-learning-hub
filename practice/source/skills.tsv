@@ -1,0 +1,121 @@
+# id	objective (plain-language paraphrase of the official skill)	guide file	section heading	shared-with
+1.1.1	Read data from streaming sources	streaming.md	Consumer integrations and source selection
+1.1.2	Read data from batch sources	data-movement.md	Batch ingestion by source and destination
+1.1.3	Configure batch ingestion options	data-movement.md	Manifests and incremental loads
+1.1.4	Consume data APIs	apis-and-sdks.md	API pagination and resumable ingestion
+1.1.5	Set up schedulers for jobs and crawlers	orchestration.md	Schedules, time zones, and backfills
+1.1.6	Set up event triggers	orchestration.md	S3 events and EventBridge routing
+1.1.7	Call a Lambda function from Kinesis	lambda.md	Read a Kinesis stream with Lambda
+1.1.8	Create IP allowlists for data source connections	networking.md	Source allowlists and network paths
+1.1.9	Handle throttling and rate limits in DynamoDB, RDS, and Kinesis	apis-and-sdks.md	Throttle signals and bounded retries
+1.1.10	Manage fan-in and fan-out for streaming data	streaming.md	Fan-in, fan-out, and throughput
+1.1.11	Describe replayability of ingestion pipelines	streaming.md	Retention, checkpoints, and replay
+1.1.12	Define stateful and stateless data transactions	streaming.md	Event-time state and stateless transforms
+1.2.1	Optimize container usage (EKS, ECS)	pipeline-engineering.md	Container sizing and deployment choices
+1.2.2	Connect to data sources over JDBC and ODBC	glue.md	Glue connections, networking, and credentials
+1.2.3	Integrate data from multiple sources	glue.md	Joining sources, schema alignment, and skew
+1.2.4	Optimize costs while processing data	glue.md	Numbers and defaults
+1.2.5	Choose a transformation service for the requirements	emr.md	Transformation engine decisions
+1.2.6	Transform data between formats	file-layout.md	From raw CSV to partitioned Parquet
+1.2.7	Troubleshoot transformation failures and performance	emr.md	Spark execution stages, logs, and failure isolation
+1.2.8	Create data APIs for other systems	apis-and-sdks.md	API Gateway, Lambda, and DynamoDB serving
+1.2.9	Define volume, velocity, and variety of data	file-layout.md	Volume, velocity, and variety
+1.2.10	Integrate LLMs for data processing	vectors-and-llms.md	LLM extraction and output validation
+1.3.1	Build ETL workflows with orchestration services	orchestration.md	Step Functions, Glue workflows, and Airflow
+1.3.2	Build resilient, scalable, fault-tolerant pipelines	orchestration.md	Queues, backpressure, retries, and recovery
+1.3.3	Implement and maintain serverless workflows	orchestration.md	Service integrations and execution history
+1.3.4	Send alerts with notification services	orchestration.md	Alerts, buffers, and failed deliveries	3.3.3
+1.4.1	Optimize code to reduce runtime	pipeline-engineering.md	Batching, parallelism, and pushdown
+1.4.2	Configure Lambda concurrency and performance	lambda.md	Reserved and provisioned concurrency
+1.4.3	Use programming languages and frameworks	pipeline-engineering.md	SQL, Python, and Spark workload choices
+1.4.4	Apply software engineering best practices	deployment.md	Engineering practices for data pipelines
+1.4.5	Deploy with infrastructure as code	deployment.md	Infrastructure as code and deployment review	1.4.8
+1.4.6	Package and deploy with AWS SAM	deployment.md	SAM package, deploy, and rollback
+1.4.7	Use and mount storage in Lambda	lambda.md	Temporary and shared storage
+1.4.8	Use CloudFormation and CDK for repeatable deployment	deployment.md	CloudFormation stacks and CDK synthesis	1.4.5
+1.4.9	Describe CI/CD for data pipelines	deployment.md	Continuous integration and delivery
+1.4.10	Define distributed computing	emr.md	Distributed processing, shuffle, and workers
+1.4.11	Describe data structures and algorithms	pipeline-engineering.md	Maps, trees, and graphs
+2.1.1	Choose storage for cost and performance	databases.md	Cost, latency, and operational trade-offs
+2.1.2	Configure storage for access patterns	databases.md	Keys, indexes, and warehouse layout
+2.1.3	Apply specialized stores (HNSW on Aurora, MemoryDB)	databases.md	MemoryDB, ElastiCache, DynamoDB, and vector stores
+2.1.4	Integrate migration tools such as Transfer Family	data-movement.md	Batch ingestion by source and destination
+2.1.5	Use federated queries, materialized views, and Spectrum	redshift.md	Spectrum, federation, and materialized views
+2.1.6	Manage locks in Redshift and RDS	redshift.md	Redshift and RDS transactions, locks, and contention
+2.1.7	Manage open table formats such as Iceberg	iceberg.md	Iceberg maintenance and Amazon S3 Tables
+2.1.8	Describe vector index types (HNSW, IVF)	vectors-and-llms.md	HNSW and IVF trade-offs
+2.2.1	Use data catalogs to consume data	catalog.md	Read a cataloged dataset
+2.2.2	Build a technical catalog (Glue, Hive metastore)	catalog-and-unified-studio.md	Glue Data Catalog and Hive metastore
+2.2.3	Discover schemas with Glue crawlers	catalog.md	Crawler discovery and schema change policy
+2.2.4	Synchronize partitions with the catalog	catalog.md	Registration, repair, and partition projection
+2.2.5	Create source and target connections for cataloging	glue.md	Glue connections, networking, and credentials
+2.2.6	Create and manage business catalogs (SageMaker Catalog)	catalog-and-unified-studio.md	Publish an asset and approve subscriptions
+2.3.1	Load and unload data between S3 and Redshift	redshift.md	COPY, staging, and UNLOAD
+2.3.2	Move data between storage tiers with lifecycle	s3.md	Storage classes, retrieval, and lifecycle rules
+2.3.3	Expire data by age	s3.md	Expiration rules for current and older versions
+2.3.4	Use S3 versioning and DynamoDB TTL	s3.md	Versioned deletes and DynamoDB TTL comparison
+2.3.5	Delete or retain data to meet requirements	s3.md	Deletion, Object Lock, and legal holds
+2.3.6	Protect data with resiliency and availability	s3.md	Replication, version recovery, and restore testing
+2.4.1	Design schemas for Redshift, DynamoDB, and Lake Formation	data-modeling.md	Grain, keys, sort order, and governed schemas
+2.4.2	Address changes to data characteristics	data-modeling.md	Compatible and breaking schema changes
+2.4.3	Perform schema conversion	data-modeling.md	DMS Schema Conversion and manual action items
+2.4.4	Establish data lineage	data-modeling.md	Catalog lineage and SageMaker ML Lineage Tracking
+2.4.5	Apply indexing, partitioning, and compression	file-layout.md	File layout, pruning, compression, and index trade-offs
+2.4.6	Describe vectorization concepts	vectors-and-llms.md	Chunking, embeddings, and Bedrock Knowledge Bases
+3.1.1	Orchestrate pipelines with MWAA and Step Functions	orchestration.md	Step Functions, Glue workflows, and Airflow
+3.1.2	Troubleshoot managed workflows	orchestration.md	Debug task failures in Step Functions and MWAA
+3.1.3	Call SDKs from code	apis-and-sdks.md	AWS SDK clients, pagination, and errors
+3.1.4	Use EMR, Redshift, and Glue features to process data	emr.md	Operational choices on EMR on EC2
+3.1.5	Consume and maintain data APIs	apis-and-sdks.md	API timeouts, pagination, authentication, and checkpoints
+3.1.6	Prepare data for transformation (DataBrew, Unified Studio)	analysis-and-data-prep.md	DataBrew recipes and Unified Studio preparation
+3.1.7	Query data with Athena	athena.md	Workgroups and cost control
+3.1.8	Automate processing with Lambda	lambda.md	Choose Lambda for a data pipeline
+3.1.9	Manage events and schedulers	orchestration.md	EventBridge Rules, Scheduler, and Pipes
+3.2.1	Visualize data (DataBrew, QuickSight)	analysis-and-data-prep.md	QuickSight dashboards and DataBrew profiling
+3.2.2	Verify and clean data	analysis-and-data-prep.md	Profile, validate, and correct a batch
+3.2.3	Query and create views with SQL in Redshift and Athena	sql-patterns.md	Athena and Redshift queries and views
+3.2.4	Explore data with Athena Spark notebooks	analysis-and-data-prep.md	Athena for Apache Spark notebook workflow
+3.2.5	Compare provisioned and serverless services	redshift.md	Serverless and provisioned cost and scaling
+3.2.6	Define aggregation, rolling average, grouping, pivoting	sql-patterns.md	Worked aggregation, window, and pivot queries
+3.3.1	Extract logs for audits	privacy-and-audit.md	Audit evidence, scope, and retention
+3.3.2	Deploy logging and monitoring for traceability	monitoring.md	Correlation IDs, freshness, and alarms
+3.3.3	Use notifications during monitoring	orchestration.md	Alerts, buffers, and failed deliveries	1.3.4
+3.3.4	Troubleshoot performance issues	monitoring.md	Lag, skew, scan volume, and query queues
+3.3.5	Use CloudTrail to track API calls	privacy-and-audit.md	CloudTrail event categories and selectors	4.4.1
+3.3.6	Troubleshoot and maintain Glue and EMR pipelines	emr.md	Spark execution stages, logs, and failure isolation
+3.3.7	Configure CloudWatch Logs for application data	monitoring.md	CloudWatch log groups, retention, and queries	4.4.2
+3.3.8	Analyze logs with AWS services	monitoring.md	Logs Insights, Athena, EMR, and OpenSearch	4.4.4
+3.4.1	Run data quality checks during processing	data-quality.md	Validate, quarantine, and reconcile rows
+3.4.2	Define data quality rules	data-quality.md	Glue DQDL and DataBrew rule sets
+3.4.3	Investigate data consistency	data-quality.md	Profile drift and reconcile counts
+3.4.4	Describe data sampling techniques	analysis-and-data-prep.md	Random and stratified sampling
+3.4.5	Implement data skew mechanisms	emr.md	Diagnose and mitigate partition and join skew
+4.1.1	Update VPC security groups	networking.md	Security groups for private database access
+4.1.2	Create and update IAM groups, roles, endpoints, and services	security.md	Identity types and endpoint access
+4.1.3	Create and rotate credentials (Secrets Manager)	security.md	Secrets Manager and Parameter Store
+4.1.4	Set up IAM roles for Lambda, API Gateway, CLI, CloudFormation	security.md	Trust and permission policies by caller
+4.1.5	Apply IAM policies to endpoints and services (Access Points, PrivateLink)	networking.md	Access points, gateway endpoints, and PrivateLink
+4.1.6	Describe managed and unmanaged services	networking.md	Shared responsibility across deployment models
+4.1.7	Use domains, domain units, and projects in Unified Studio	catalog-and-unified-studio.md	Domains, domain units, and projects
+4.2.1	Create custom IAM policies	security.md	Build a scoped policy from required operations
+4.2.2	Store application and database credentials	security.md	Secrets Manager and Parameter Store
+4.2.3	Grant database users, groups, and roles access in Redshift	redshift.md	Database roles, grants, and schema access
+4.2.4	Manage permissions through Lake Formation	governance.md	Lake Formation grants across query engines
+4.2.5	Apply role-based, tag-based, and attribute-based authorization	governance.md	RBAC, IAM ABAC, and LF-tags
+4.2.6	Construct least-privilege policies	security.md	Least-privilege policy examples and tests
+4.3.1	Apply masking and anonymization	privacy-and-audit.md	Dynamic masking, redaction, and tokenization
+4.3.2	Use KMS keys to encrypt and decrypt data	security.md	KMS keys, grants, and policies
+4.3.3	Configure encryption across account boundaries	security.md	Cross-account encrypted object access
+4.3.4	Enable encryption in transit or before transit	privacy-and-audit.md	TLS, client-side encryption, and S3 encryption modes
+4.4.1	Use CloudTrail to track API calls	privacy-and-audit.md	CloudTrail event categories and selectors	3.3.5
+4.4.2	Use CloudWatch Logs to store application logs	monitoring.md	CloudWatch log groups, retention, and queries	3.3.7
+4.4.3	Use CloudTrail Lake for centralized queries	privacy-and-audit.md	CloudTrail Lake and account availability
+4.4.4	Analyze logs with AWS services	privacy-and-audit.md	Query audit logs in Athena, Logs Insights, or OpenSearch	3.3.8
+4.4.5	Integrate services for large-volume logging (EMR)	monitoring.md	S3 log archive and distributed processing with EMR
+4.5.1	Grant permissions for data sharing	governance.md	Redshift datashares and Lake Formation sharing
+4.5.2	Implement PII identification (Macie with Lake Formation)	governance.md	Macie discovery and Lake Formation access
+4.5.3	Prevent backups or replication to disallowed Regions	privacy-and-audit.md	Regional controls for replication and backups
+4.5.4	View configuration changes (AWS Config)	privacy-and-audit.md	Audit evidence, scope, and retention
+4.5.5	Maintain data sovereignty	privacy-and-audit.md	Data residency, sovereignty, and exception reviews
+4.5.6	Manage data access through SageMaker Catalog projects	catalog-and-unified-studio.md	Project subscriptions and fulfillment
+4.5.7	Describe governance frameworks and sharing patterns	governance.md	Central governance, delegated ownership, and sharing

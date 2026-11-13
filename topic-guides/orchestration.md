@@ -55,6 +55,10 @@ For a failed pipeline, determine whether the event reached the target. A rule ta
 
 In Step Functions, inspect state input, the service integration error, and the retry or catch policy. In Airflow, inspect the DAG run, the task instance logs, and the failed dependency. Rerun the smallest safe unit with the original batch identifier and verify output before marking recovery complete.
 
+## Common mistake
+
+Starting a Glue job from Step Functions with the plain request-response integration and assuming the next state waits for it. Use the `.sync` integration pattern so the workflow waits for the job to finish and sees its final status.
+
 ## Commonly confused
 
 | Choices | Deciding requirement |
@@ -82,3 +86,5 @@ Route the arrival event to a Standard Step Functions workflow. Wait for Glue wit
 - [Step Functions integration with Glue](https://docs.aws.amazon.com/step-functions/latest/dg/connect-glue.html)
 - [Handling Step Functions errors](https://docs.aws.amazon.com/step-functions/latest/dg/concepts-error-handling.html)
 - [What is Amazon MWAA?](https://docs.aws.amazon.com/mwaa/latest/userguide/what-is-mwaa.html)
+
+*Last verified against AWS documentation: November 2026.*

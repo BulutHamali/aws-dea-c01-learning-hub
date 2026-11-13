@@ -1,0 +1,459 @@
+# Supplemental bank source.
+
+=== B01
+set: bank
+primary: 1.1.12
+secondary: 1.1.1
+answer: B
+stem: Which processing step on an instrument event stream is stateful?
+A: Renaming the field temp_c to temperature_celsius on each event as it arrives || Each event is changed on its own, so no state is kept between events.
+B: Counting alerts per instrument in each five-minute event-time window || The count must remember earlier events in the window, which is state.
+C: Dropping events whose instrument_id field is empty or missing || The decision uses only the current event.
+D: Converting each event's timestamp from local time to UTC || Each event is converted independently.
+explain: Stateful processing keeps information across events, such as counts in a window.
+
+=== B02
+set: bank
+primary: 1.2.9
+secondary: 2.4.5
+answer: D
+stem: A lab collects 40 GB of structured run tables daily, 3,000 JSON telemetry events per second, and thousands of PDF protocols. Which statement correctly describes these data characteristics?
+A: All three are high-volume structured data and fit the same warehouse table design || The PDFs are unstructured and the events are semi-structured.
+B: The telemetry is low velocity because each event is small, so nightly batches suffice || Thousands of events per second is high velocity regardless of event size.
+C: The PDFs are structured data because each file has the same page layout || Free text in documents is unstructured even when the layout repeats.
+D: Run tables structured, events high-velocity semi-structured, PDFs unstructured || This matches the volume, velocity, and variety of each source.
+explain: Volume is size, velocity is arrival rate, and variety is structure. Each source needs different tools.
+
+=== B03
+set: bank
+primary: 1.4.3
+secondary: 1.4.1
+answer: A
+stem: An engineer must aggregate 2 billion rows that already sit in Redshift into daily totals per instrument. Which approach is most efficient?
+A: A SQL INSERT ... SELECT with GROUP BY that runs inside Redshift || The aggregation runs where the data is, in parallel, with no data movement.
+B: A Python script that pulls every row through JDBC and sums values in a loop || Moving 2 billion rows to one process is slow and memory-heavy.
+C: A Bash script that UNLOADs the table to CSV and sums the files with awk || This adds export, parsing, and single-machine processing for no gain.
+D: An R script that loads the table into a data frame on a laptop || A laptop cannot hold or process 2 billion rows efficiently.
+explain: Push computation to where the data lives. In a warehouse, that means SQL.
+
+=== B04
+set: bank
+primary: 2.2.1
+secondary: 3.1.7, 2.2.2
+answer: C
+stem: Parquet files for a curated dataset are in S3, but an Athena query on the table returns zero rows. A crawler created the table last month. New data is in folders such as run_date=2026-11-10/. What is the most likely cause?
+A: Athena cannot read Parquet files that a Glue job wrote to S3 || Athena reads Parquet normally.
+B: The files are encrypted with SSE-S3, which Athena does not support || Athena reads SSE-S3 objects transparently.
+C: The new partitions were never added to the catalog table || Athena reads only partitions known to the catalog unless projection is enabled.
+D: Athena needs the bucket's Requester Pays setting turned on || Requester Pays affects billing, not which partitions are visible.
+explain: The data and the metadata are separate layers. New partitions must be registered or projected.
+
+=== B05
+set: bank
+primary: 3.1.5
+secondary: 1.1.4
+answer: B
+stem: A Lambda function has pulled data from a partner API daily for a year. Recently some runs hang until the 15-minute timeout, and the partner rotated the OAuth client secret last month without notice. Which TWO practices make the client easier to maintain? Pick the best single answer that includes both.
+A: Hard-code the new secret in the function and raise the function's memory || Hard-coded secrets break on the next rotation, and memory does not fix hangs.
+B: Set connect and read timeouts, and read the secret from Secrets Manager || Timeouts fail fast instead of hanging, and a stored secret can be updated without redeploying.
+C: Retry every failed call immediately up to 100 times inside the same invocation || Retry storms waste the invocation and can get the client blocked.
+D: Move the function to a larger instance type on EC2 to avoid Lambda limits || Hangs and secret rotation are not fixed by a bigger server.
+explain: Maintainable API clients set timeouts and keep credentials outside the code.
+
+=== B06
+set: bank
+primary: 3.1.8
+secondary: 1.1.6, 1.1.5
+answer: D
+stem: Each time a small manifest file lands in S3, the pipeline must check that every listed data file exists and then start a Glue job. The check takes about two seconds. What is the simplest automation?
+A: An EMR cluster that polls the bucket every minute and starts the job || A cluster is far too heavy for a two-second check.
+B: A Glue job that runs every 5 minutes and checks for new manifests || Polling adds delay, and a Spark job is heavy for a tiny check.
+C: An EC2 instance running a cron script that lists the bucket every minute || This adds a server to manage and polling delay.
+D: An S3 event invoking Lambda, which checks the files and starts Glue || Lambda fits short event-driven checks and can call the Glue API.
+explain: Short, event-driven work is what Lambda is for.
+
+=== B07
+set: bank
+primary: 3.2.2
+secondary: 3.4.3, 3.2.1
+answer: A
+stem: Before loading a supplier file, an analyst wants to see null rates, value distributions, and outliers for every column without writing code, and then fix common issues. What should she use?
+A: A DataBrew profile job, then a DataBrew project to fix issues || DataBrew profiles columns visually and offers point-and-click cleaning.
+B: CloudTrail data events on the bucket to see which columns were read || CloudTrail records API calls, not column statistics.
+C: An S3 Inventory report on the bucket that holds the supplier file || Inventory lists objects and metadata, not data quality.
+D: A Glue crawler run to infer the schema and column statistics || A crawler infers schema but does not profile values or clean data.
+explain: Visual profiling and cleaning without code is DataBrew.
+
+=== B08
+set: bank
+primary: 3.3.1
+secondary: 3.3.5, 4.4.3
+answer: C
+stem: Auditors need a file listing every read of objects under s3://lab-curated/donors/ last month, including who read each object. CloudTrail data events for the bucket have been enabled all year and delivered to a trail bucket. How should the engineer extract the evidence?
+A: Download CloudTrail Event history from the console for the past month || Event history holds management events, not data events.
+B: Turn on S3 server access logging now and export last month's logs || Logging started now cannot capture last month.
+C: Query the trail's logs in Athena for GetObject on that prefix || The data events are already stored, and Athena can filter and export them.
+D: Run Macie on the prefix and export the findings for last month || Macie finds sensitive data, not who read it.
+explain: Data events stored in S3 can be queried with Athena to produce audit evidence.
+
+=== B09
+set: bank
+primary: 3.3.8
+secondary: 4.4.4, 3.3.7
+answer: B
+stem: An operations team wants to search application logs from many services in near real time, with full-text search and dashboards. Logs currently go to CloudWatch Logs. What should the engineer set up?
+A: A daily export of the log groups to S3, queried with Athena || Daily exports are not near real time.
+B: A subscription filter streaming the log groups to OpenSearch Service || Subscription filters stream events as they arrive, and OpenSearch provides search and dashboards.
+C: A metric filter on each log group that counts matching lines || Metric filters produce counts, not searchable log lines.
+D: CloudTrail Insights on the account to find unusual activity in logs || CloudTrail Insights analyzes API call rates, not application logs.
+explain: Near real-time full-text log search is OpenSearch, fed by a subscription filter.
+
+=== B10
+set: bank
+primary: 3.4.3
+secondary: 3.2.6
+answer: D
+stem: The row count in the curated runs table is 3% lower than the raw table for yesterday, but the job reported no rejected rows. What should the engineer check first?
+A: The KMS key rotation status for the curated bucket || Key rotation does not remove rows.
+B: The Glue worker type, because small workers drop rows under memory pressure || Spark fails tasks under memory pressure. It does not silently drop rows.
+C: The Athena workgroup's per-query data limit on the curated table || A limit cancels queries. It does not change stored row counts.
+D: Duplicate keys in raw data removed by a dedupe step, compared per key and day || Counting per key in both tables shows whether deduplication or a join explains the gap.
+explain: Reconcile counts per key and per day to find where rows were removed.
+
+=== B11
+set: bank
+primary: 4.1.2
+secondary: 4.1.4
+answer: A
+stem: Ten analysts each have an IAM user. Today, an admin attaches the same three policies to every new analyst. The company also wants analysts to stop using long-term access keys. What should change?
+A: IAM Identity Center sign-in with a permission set holding the policies || Analysts get temporary credentials, and one permission set replaces per-user policies.
+B: Add all analyst users to an IAM group and keep their long-term access keys || A group simplifies policy management but does not remove long-term keys.
+C: Create one shared IAM user for all analysts with the three policies attached || Shared users destroy accountability and still use long-term keys.
+D: Attach the policies to each analyst's user with a permissions boundary || Boundaries limit maximum permissions. Keys remain long-term.
+explain: People should use federated sign-in with temporary credentials. Groups or permission sets manage policies once.
+
+=== B12
+set: bank
+primary: 4.1.6
+secondary: 2.1.1
+answer: C
+stem: A team runs PostgreSQL on EC2 and spends hours each month on OS patches, database upgrades, backups, and failover testing. It wants to spend that time on data work instead. What should it move to, and what does it still manage?
+A: PostgreSQL on a larger EC2 instance, still managing patches and backups || This keeps every task the team wants to drop.
+B: Amazon RDS for PostgreSQL, where AWS also manages schema design and grants || AWS manages infrastructure tasks, not your schema, users, or grants.
+C: Amazon RDS for PostgreSQL, keeping schema, grants, and security groups || RDS handles patching, backups, and failover. You still own data-level settings.
+D: Amazon DynamoDB, where AWS manages everything including IAM permissions || DynamoDB is a different data model, and you always manage IAM permissions.
+explain: Managed services shift infrastructure work to AWS. You still own data, access, and configuration.
+
+=== B13
+set: bank
+primary: 4.2.1
+secondary: 4.2.6
+answer: B
+stem: The AWS managed policy AWSGlueServiceRole grants more than a new job needs, and the job also reads one secret and writes one CloudWatch log group. Security asks for a policy that fits this job exactly. What should the engineer do?
+A: Keep the managed policy and add an inline deny for every service the job avoids || Listing denies is fragile, and the base policy stays too broad.
+B: Write a customer managed policy listing the exact actions and resource ARNs used || A custom policy scoped to the job's actions and resources meets least privilege.
+C: Attach AdministratorAccess temporarily and remove it after the first run || This grants everything, even briefly, and is easy to forget.
+D: Use the managed policy with a permissions boundary set to the same policy || The boundary equals the broad policy, so nothing is narrowed.
+explain: When managed policies are too broad, write a custom policy for the exact actions and resources.
+
+=== B14
+set: bank
+primary: 4.2.3
+secondary: 4.2.4
+answer: D
+stem: In Redshift, a new group of 25 analysts needs SELECT on every table in the reporting schema, including tables created later. Access must be easy to revoke as a group. What should the database administrator do?
+A: Grant SELECT on each table to each analyst user individually || Hard to maintain and revoke, and new tables need new grants.
+B: Make every analyst a superuser so no grants are needed || Superusers bypass all access control.
+C: Create an IAM policy with redshift:GetClusterCredentials for the analysts || This controls login, not SQL privileges on tables.
+D: A role with schema USAGE, SELECT, and default privileges for new tables || One role grants access, covers future tables, and is revoked once.
+explain: Use database roles and default privileges for groups of users.
+
+=== B15
+set: bank
+primary: 4.3.2
+secondary: 4.3.3
+answer: A, C
+stem: Security requires that every read of curated objects is recorded as a key usage event and that keys can be disabled to cut off access quickly. KMS request costs must stay low.
+A: Encrypt objects with SSE-KMS using a customer managed key || KMS calls appear in CloudTrail, and you can disable a customer managed key.
+B: Keep the default SSE-S3 encryption on the bucket || SSE-S3 keys are managed by S3, with no per-key control or KMS audit trail.
+C: Turn on S3 Bucket Keys for the bucket's SSE-KMS encryption || Bucket Keys cut the number of KMS requests and their cost.
+D: Use SSE-C and store the keys in a spreadsheet || Customer-provided keys must be sent with each request and are hard to manage.
+E: Use the AWS managed aws/s3 key for all objects || You cannot disable or change the policy of an AWS managed key.
+explain: Customer managed KMS keys give audit and control. Bucket Keys keep request costs down.
+
+=== B16
+set: bank
+primary: 4.4.3
+secondary: 3.3.1
+answer: C
+stem: A security team that has used CloudTrail Lake since 2024 wants to keep running SQL over seven years of CloudTrail events across all accounts in its organization. A new team in the same company asks to adopt CloudTrail Lake in December 2026. What should each team expect?
+A: Both teams can create new CloudTrail Lake event data stores as usual || CloudTrail Lake closed to new customers on May 31, 2026.
+B: Both teams must stop using CloudTrail Lake and delete their event data stores || Existing customers can keep using it.
+C: The existing team keeps CloudTrail Lake. The new team is pointed to CloudWatch || Existing customers continue, while AWS recommends CloudWatch for new adoption.
+D: The new team can use CloudTrail Lake only through an organization data store || New customers cannot sign up regardless of store type.
+explain: Know what CloudTrail Lake does for the exam, and that AWS closed it to new customers in 2026.
+
+=== B17
+set: bank
+primary: 4.4.5
+secondary: 3.3.8
+answer: B
+stem: A company keeps 80 TB of application and VPC Flow Logs in S3. It needs a monthly job that parses raw logs, joins them with an asset inventory, and computes complex sessionization across billions of lines. Which approach fits best?
+A: CloudWatch Logs Insights over the S3 data, run monthly from the console || Logs Insights queries log groups in CloudWatch, not raw logs in S3.
+B: A transient EMR cluster running a Spark job over the logs in S3 || Spark on EMR handles complex processing over very large log volumes.
+C: Lambda functions, one per log file, writing partial results to DynamoDB || Coordinating complex joins and sessionization across Lambdas is fragile.
+D: Amazon Macie scanning the log bucket to classify the log contents || Macie finds sensitive data, not analytics.
+explain: Very large, complex log processing fits EMR with Spark.
+
+=== B18
+set: bank
+primary: 4.5.5
+secondary: 4.5.3
+answer: D
+stem: A European hospital partner requires that patient data stays under EU jurisdiction. That includes its storage, its backups, and control of the encryption keys. Engineers outside the EU must not access it. Which design best maintains data sovereignty?
+A: Store data in eu-central-1 with the default SSE-S3 encryption and no extra controls || Location alone does not control keys or who can access the data.
+B: Store data in us-east-1 with SSE-KMS keys created in eu-central-1 || The data itself would sit outside the EU.
+C: Replicate data to every Region for resilience and encrypt each copy with KMS || Replicas outside the EU break the requirement.
+D: EU Region storage and backups, KMS keys in that Region, and access limited to EU staff || Location, keys, and access all stay under the required jurisdiction.
+explain: Sovereignty covers location, key control, and who can access the data.
+
+=== B19
+set: bank
+primary: 1.1.9
+secondary: 1.1.10
+answer: C
+stem: Producers writing to a provisioned Kinesis stream get ProvisionedThroughputExceededException. CloudWatch shows total traffic at 60% of stream capacity, but one shard receives most records because the partition key is the instrument type, and one type dominates. What should the engineer do?
+A: Double the number of shards in the stream by resharding || Records with the same key still go to one shard.
+B: Switch the producers from PutRecords to PutRecord for each event || Single calls add overhead and do not change the key distribution.
+C: Use instrument ID as the key, if ordering allows it || More distinct keys spread records across shards.
+D: Increase the stream retention from 24 hours to 7 days || Retention does not affect write throughput.
+explain: Hot shards come from skewed partition keys. Fix the key distribution.
+
+=== B20
+set: bank
+primary: 1.2.7
+secondary: 3.3.4
+answer: A
+stem: A Glue job that writes curated Parquet takes three times longer than last month. Input volume grew by only 10%. The output now has 400,000 files of a few kilobytes each. What should the engineer change?
+A: Reduce the output partition count, for example with coalesce || Fewer, larger files cut per-file overhead in the write and in later queries.
+B: Increase the number of workers so more small files are written in parallel || More workers can create even more small files.
+C: Switch the output format from Parquet to CSV to make writing faster || CSV makes later queries far slower and does not fix the file count.
+D: Turn off job bookmarks so the job reprocesses all inputs each time || Reprocessing everything makes the job slower.
+explain: Too many small output files slow writes and reads. Control the output partition count.
+
+=== B21
+set: bank
+primary: 2.1.3
+secondary: 2.1.8, 2.4.6
+answer: B
+stem: A product catalog in Aurora PostgreSQL needs similarity search over 2 million product description embeddings, joined with relational filters such as price and stock. The team wants to avoid running a separate search cluster. What should it do?
+A: Copy embeddings to DynamoDB and compute cosine similarity in Lambda || DynamoDB has no vector index, so every search scans the data.
+B: Enable pgvector on Aurora and add an HNSW index || Vectors stay next to relational data, and HNSW speeds similarity search.
+C: Store embeddings in Redshift and run a nightly batch similarity job || Batch jobs do not serve interactive searches.
+D: Store embeddings as JSON in S3 and query them with Athena || Athena has no vector index and would scan every embedding.
+explain: Vectors that sit next to relational data fit pgvector with HNSW on Aurora PostgreSQL.
+
+=== B22
+set: bank
+primary: 2.4.2
+secondary: 2.1.7
+answer: C
+stem: An analytics table must rename the column reading to read_count. It is read by Athena and Spark. Which table format lets the rename happen without rewriting data files or breaking readers that use column positions?
+A: CSV with a header row, editing the header in each file || Every file must be rewritten, and readers by position may break.
+B: Plain Parquet registered as a Hive-style external table || Name-based Parquet readers lose the old column's data after a rename.
+C: Apache Iceberg, which tracks columns by ID in table metadata || Iceberg renames in metadata, so files are untouched and readers stay correct.
+D: JSON Lines files with a crawler that updates the schema daily || Field names live inside every record, so a rename requires rewriting data.
+explain: Iceberg tracks columns by ID, so renames are metadata-only changes.
+
+=== B23
+set: bank
+primary: 3.3.4
+secondary: 1.4.2
+answer: D
+stem: A Lambda function consuming an SQS queue shows a growing ApproximateAgeOfOldestMessage. The function's Throttles metric is high, and the account's other functions use most of the regional concurrency. What should the engineer do?
+A: Increase the queue's visibility timeout to 12 hours || Longer visibility delays retries but does not add processing capacity.
+B: Lower the event source mapping batch size to one message || Smaller batches need more invocations, which worsens throttling.
+C: Enable long polling on the queue with a 20-second wait time || Long polling reduces empty receives but does not add concurrency.
+D: Reserve concurrency or request a higher account limit || The function is being throttled, so it needs guaranteed or more concurrency.
+explain: Throttles plus growing queue age mean the consumer lacks concurrency.
+
+=== B24
+set: bank
+primary: 4.2.6
+secondary: 4.1.4
+answer: A
+stem: A Glue job role has been in production for six months with broad permissions. Security wants to remove permissions the job never uses, based on evidence rather than guesses. What should the engineer use?
+A: IAM Access Analyzer policy generation and unused access findings || It builds a policy from actions the role actually called.
+B: The IAM policy simulator to test every AWS action against the role || The simulator tests allowed actions, not which ones were used.
+C: AWS Config to list the role's attached policies over time || Config shows configuration history, not usage of actions.
+D: Amazon Macie to scan the role's policy documents for sensitive data || Macie scans S3 data, not IAM usage.
+explain: Access Analyzer turns observed activity into a least-privilege policy.
+
+=== B25
+set: bank
+primary: 4.1.5
+secondary: 4.1.1
+answer: B, D
+stem: A shared data bucket is used by five teams with different prefixes. The bucket policy has grown too large to manage. One team's application runs only inside a specific VPC and must reach the bucket only from there.
+A: Create five IAM users with access keys, one per team || Long-term keys and users do not simplify bucket access.
+B: Create an S3 Access Point per team, each with its own policy and prefix || Access points split one large bucket policy into smaller per-team policies.
+C: Turn on S3 Object Ownership with ACLs enabled for each team || ACLs add complexity and are not recommended.
+D: Restrict that team's access point to its VPC with a network origin setting || A VPC-restricted access point accepts requests only from that VPC.
+E: Enable S3 Transfer Acceleration for the team that runs in the VPC || Acceleration speeds uploads and does not restrict access.
+explain: Access points give per-application policies, and a VPC network origin restricts where requests come from.
+
+=== B26
+set: bank
+primary: 2.2.4
+secondary: 2.2.3
+answer: C
+stem: A Glue job writes a new partition to a table that Athena, Redshift Spectrum, and EMR all read. Analysts need the partition visible in all three engines as soon as the job finishes. What should the job do?
+A: Rely on Athena partition projection configured on the table || Projection only works in Athena, not Spectrum or EMR.
+B: Schedule a crawler to run once each night after midnight || The partition stays invisible until the crawler runs.
+C: Register the partition in the Glue Data Catalog || All three engines read partitions from the shared catalog.
+D: Run MSCK REPAIR TABLE from Redshift Spectrum after each job || MSCK REPAIR TABLE is a Hive and Athena command, not a Spectrum command.
+explain: When several engines share a table, register partitions in the catalog.
+
+=== B27
+set: bank
+primary: 1.3.2
+secondary: 1.3.3
+answer: D
+stem: A Step Functions workflow calls an external enrichment API that fails about 2% of the time with transient errors and occasionally returns a permanent "invalid sample" error. What error handling fits?
+A: No Retry field, with every error going straight to a failure notification || Transient errors would page operators for problems a retry would fix.
+B: Retry every error forever with no maximum attempts || Permanent errors would retry endlessly.
+C: Catch every error and continue the workflow as if the step succeeded || Silent success corrupts downstream data.
+D: Retry transient errors with backoff, catch the permanent one for review || Retries handle transient failures, and a catch routes permanent ones for review.
+explain: Retry what can succeed later. Catch what cannot, and route it somewhere visible.
+
+=== B28
+set: bank
+primary: 3.4.2
+secondary: 3.2.2
+answer: A
+stem: Which DQDL rule fails when more than 5% of rows have a missing instrument value?
+A: Completeness "instrument" >= 0.95 || Completeness measures the share of non-null values and fails below 95%.
+B: IsComplete "instrument" || IsComplete fails on any missing value, which is stricter than 5%.
+C: ColumnExists "instrument" || This checks the column exists, not how many values are present.
+D: Uniqueness "instrument" >= 0.95 || Uniqueness measures distinct values, not missing values.
+explain: Completeness takes a threshold. IsComplete requires every value to be present.
+
+=== B29
+set: bank
+primary: 1.1.7
+secondary: 1.1.12
+answer: C
+stem: A Lambda function reads a Kinesis stream through an event source mapping. It must emit the count of error events per instrument every five minutes, without adding another service to hold state. What should the engineer configure?
+A: A larger batch size so each invocation sees five minutes of records || Batch size limits records per call. It does not align batches to time windows or keep state.
+B: Provisioned concurrency so the same environment always handles each shard || Lambda does not guarantee the same environment, and memory is not durable state.
+C: A tumbling window of 300 seconds on the event source mapping || Lambda passes state between invocations within each window and returns the final result.
+D: Enhanced fan-out on the stream for the function's event source mapping || Enhanced fan-out adds read bandwidth, not windowed aggregation.
+explain: Lambda tumbling windows support simple stateful aggregation over stream records.
+
+=== B30
+set: bank
+primary: 1.2.1
+secondary: 1.4.1
+answer: A
+stem: An ECS on Fargate task converts files and is configured with 8 vCPU and 32 GB. CloudWatch Container Insights shows it never uses more than 1.5 vCPU and 5 GB, and each task runs for about 10 minutes. Tasks can be retried if interrupted. How should the team cut cost?
+A: Right-size the task to 2 vCPU and 8 GB and run it on Fargate Spot || Matching resources to use and using Spot for retryable work both cut cost.
+B: Move the task to EKS on On-Demand nodes with the same resource settings || Changing platforms keeps the oversized settings and adds operations.
+C: Keep the size and switch to a larger instance family for faster CPUs || More capacity raises cost when the task already uses little of it.
+D: Run each conversion in Lambda with 10 GB of memory and a container image || This may work, but sizing Lambda to 10 GB repeats the oversizing.
+explain: Right-size containers to observed use, and use Spot capacity for interruptible work.
+
+=== B31
+set: bank
+primary: 1.4.6
+secondary: 1.4.7
+answer: D
+stem: A SAM template defines a Lambda function that unzips 4 GB archives in /tmp. Invocations fail with "No space left on device". The team deploys only through SAM. What should the engineer change?
+A: Increase MemorySize in the template to 10,240 MB || Memory and /tmp storage are configured separately.
+B: Add a Layers property with a layer containing extra disk space || Layers add code and libraries, not writable storage.
+C: Raise the Timeout property to 900 seconds in the template || A longer run does not add disk space.
+D: Set the EphemeralStorage size property on the function to at least 5,120 MB || /tmp can be raised up to 10,240 MB, and SAM sets it in the template.
+explain: Lambda /tmp size is its own setting. Configure it in the template so deployments stay repeatable.
+
+=== B32
+set: bank
+primary: 1.2.8
+secondary: 3.1.3
+answer: B
+stem: A web application in Lambda must run parameterized SQL against a Redshift Serverless workgroup and return results. The team wants no JDBC drivers, no connection pooling, and IAM-based authentication. What should it use?
+A: Redshift federated query from the Lambda function to the workgroup || Federated query lets Redshift read RDS and Aurora. It is not an API for applications.
+B: The Redshift Data API, calling ExecuteStatement and GetStatementResult || The Data API runs SQL over HTTPS with IAM, with no drivers or persistent connections.
+C: An Athena federated query connector that points at the Redshift workgroup || This adds another engine and connector for no benefit.
+D: An RDS Proxy endpoint in front of the Redshift Serverless workgroup || RDS Proxy supports RDS and Aurora, not Redshift.
+explain: The Redshift Data API is designed for serverless applications that run SQL without managing connections.
+
+=== B33
+set: bank
+primary: 2.1.6
+secondary: 1.3.2
+answer: C
+stem: Two parallel jobs update inventory rows in Aurora PostgreSQL. Job A updates samples in ascending ID order and job B in descending order. Both sometimes fail with deadlock errors. What change reduces deadlocks most directly?
+A: Increase the Aurora instance size so each transaction finishes faster || Faster transactions can reduce the window, but the conflicting lock order remains.
+B: Turn off autocommit and wrap each job's entire run in one long transaction || Longer transactions hold locks longer and increase deadlocks.
+C: Update rows in the same order in both jobs and keep transactions short || A consistent lock order prevents cycles, and short transactions hold locks briefly.
+D: Add a read replica and send one of the jobs' updates to the replica || Replicas are read-only and cannot accept updates.
+explain: Deadlocks come from acquiring locks in different orders. Use one order and short transactions.
+
+=== B34
+set: bank
+primary: 2.4.3
+secondary: 1.1.2
+answer: A
+stem: A DMS Schema Conversion assessment for a SQL Server to Aurora PostgreSQL migration shows 92% of objects convert automatically. The rest are listed as action items, mostly stored procedures using SQL Server-specific features. What should the team do next?
+A: Rewrite the action items by hand, test them, then start DMS full load and CDC || Automatic conversion covers most objects. Action items need manual work before cutover.
+B: Start DMS full load and CDC now, since DMS converts procedures during the load || DMS replication moves rows. It does not convert stored procedures.
+C: Run a Glue crawler on the source to convert the stored procedures automatically || Crawlers infer table schemas. They do not convert code.
+D: Use AWS DataSync to copy the SQL Server data files to Aurora || Database files cannot be attached to a different engine.
+explain: Schema conversion lists what needs manual work. Fix it before replicating data and cutting over.
+
+=== B35
+set: bank
+primary: 3.2.4
+secondary: 3.4.4
+answer: D
+stem: A data scientist explores a 2 TB table in an Athena for Apache Spark notebook. Pulling the whole table for every experiment is slow. She wants a smaller dataset that still represents each of the 12 instrument types fairly. What should she do in the notebook?
+A: Read only the first partition of the table and use it for every experiment || One partition may cover one date and miss instrument types.
+B: Use df.limit(10000) on the full table to take the first 10,000 rows || The first rows are not a fair sample of every instrument type.
+C: Convert the table to CSV so the notebook can read it faster || CSV is larger and slower than Parquet.
+D: Use sampleBy on instrument type with a fraction per type || A stratified sample keeps each instrument type represented.
+explain: Stratified sampling in Spark, with sampleBy, keeps every group represented.
+
+=== B36
+set: bank
+primary: 4.3.1
+secondary: 4.5.2
+answer: B
+stem: Macie found donor email addresses in a curated dataset that will be shared with an external research partner. The partner must be able to join records for the same donor across files, but must never learn the real email addresses. What should the team do before sharing?
+A: Mask emails at query time with Redshift dynamic data masking for the partner || The partner receives files, not Redshift access, so query-time masking does not apply.
+B: Replace each email with a salted hash in a Glue job and share the transformed copy || The hash is consistent for joins, and the salt prevents easy reversal.
+C: Encrypt the files with SSE-KMS and share the key with the partner account || The partner could decrypt and read the real emails.
+D: Remove every row that contains an email address before sharing the dataset || Dropping rows loses data the partner needs.
+explain: Consistent one-way transforms, such as salted hashing, keep join keys without exposing identities.
+
+=== B37
+set: bank
+primary: 4.3.4
+secondary: 4.1.5
+answer: C
+stem: Security finds that some legacy clients upload to the curated bucket over HTTP. All requests must use TLS. What should the engineer add?
+A: Default SSE-KMS encryption on the bucket with a customer managed key || Encryption at rest does not control how data travels.
+B: S3 Object Lock in governance mode on the bucket || Object Lock prevents deletion. It does not enforce TLS.
+C: A bucket policy denying all requests where aws:SecureTransport is false || The condition rejects any request not made over HTTPS.
+D: An S3 gateway endpoint for the VPC that the clients use || Gateway endpoints route traffic but do not require TLS.
+explain: Enforce encryption in transit with a deny on aws:SecureTransport false.
+
+=== B38
+set: bank
+primary: 4.4.5
+secondary: 3.3.1
+answer: A
+stem: A security team must analyze two years of CloudTrail, VPC Flow Logs, and load balancer logs in S3, about 400 TB, to correlate activity by source IP and build a monthly audit report. The joins and parsing are complex. Which design is most appropriate?
+A: EMR Spark over the logs in S3, with summaries queried in Athena || Spark scales complex parsing and joins, and Athena can query the summarized results.
+B: Copy all logs into CloudWatch Logs and query them with Logs Insights || Re-ingesting 400 TB is costly, and Logs Insights is not built for heavy joins.
+C: A single Lambda function that reads each log file in sequence || Lambda's 15-minute limit cannot process 400 TB.
+D: Load all logs into DynamoDB and join them in the application || DynamoDB is not designed for large analytical joins.
+explain: For very large and complex log analysis, integrate EMR with S3 and Athena.

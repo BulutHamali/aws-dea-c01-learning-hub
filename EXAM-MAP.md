@@ -1,77 +1,171 @@
 # DEA-C01 exam map
 
-[Home](README.md) · [Topic index](topic-guides/README.md)
+[Home](README.md) · [Topic index](topic-guides/README.md) · [Practice](practice/full-mock.md)
 
-The percentages are shares of scored content. AWS maintains the task statements and current service list in its [official DEA-C01 exam guide](https://docs.aws.amazon.com/aws-certification/latest/data-engineer-associate-01.html).
+This map follows the [official DEA-C01 exam guide](https://docs.aws.amazon.com/aws-certification/latest/data-engineer-associate-01/data-engineer-associate-01.html), version 1.1, published December 12, 2025. The exam has 65 questions: 50 scored and 15 unscored that you cannot tell apart. You have 130 minutes, and the passing score is 720 on a scale of 100 to 1,000.
 
-| Domain | Weight | Practice these decisions |
+| Domain | Weight of scored content | Guides |
 |---|---:|---|
-| 1. Data Ingestion and Transformation | 34% | Choose batch, streaming, or CDC ingestion. Select a transformation engine. Coordinate retries and dependencies. [Streaming](topic-guides/streaming.md) · [Glue](topic-guides/glue.md) · [EMR](topic-guides/emr.md) · [Data movement](topic-guides/data-movement.md) · [Orchestration](topic-guides/orchestration.md) |
-| 2. Data Store Management | 26% | Choose a store from the access pattern. Design data layout, catalog metadata, and retention. [S3](topic-guides/s3.md) · [File layout](topic-guides/file-layout.md) · [Databases](topic-guides/databases.md) · [Catalog](topic-guides/catalog.md) · [Redshift](topic-guides/redshift.md) |
-| 3. Data Operations and Support | 22% | Automate recovery, query data, isolate failures, and measure quality. [Athena](topic-guides/athena.md) · [Monitoring](topic-guides/monitoring.md) · [Data quality](topic-guides/data-quality.md) · [SQL patterns](topic-guides/sql-patterns.md) |
-| 4. Data Security and Governance | 18% | Identify the executing role, protect data and keys, control access, and audit activity. [Security](topic-guides/security.md) · [Governance](topic-guides/governance.md) |
+| 1. Data Ingestion and Transformation | 34% | [Domain 1 guides](topic-guides/README.md#domain-1--data-ingestion-and-transformation-34) |
+| 2. Data Store Management | 26% | [Domain 2 guides](topic-guides/README.md#domain-2--data-store-management-26) |
+| 3. Data Operations and Support | 22% | [Domain 3 guides](topic-guides/README.md#domain-3--data-operations-and-support-22) |
+| 4. Data Security and Governance | 18% | [Domain 4 guides](topic-guides/README.md#domain-4--data-security-and-governance-18) |
 
-Practice tasks often cross domains. A failed Athena query can involve a missing partition, missing S3 access, or a missing KMS grant. Start with the actual error and identify which layer produced it.
+## What changed in version 1.1
 
-## Task-by-task study map
-
-This map follows the AWS exam guide’s task numbering. The descriptions below are study objectives in plain language.
-
-| Task | What you should be able to explain | Study material |
-|---|---|---|
-| 1.1 | Ingest files, database changes, API pages, or streaming events. Handle replay, fan-out, and rate limits | [Data movement](topic-guides/data-movement.md), [Streaming](topic-guides/streaming.md), [API ingestion](topic-guides/pipeline-engineering.md), [Lambda stream consumers](topic-guides/lambda.md#read-a-kinesis-stream-with-lambda) |
-| 1.2 | Choose a processing engine and validate data. Recognize when an LLM fits unstructured input | [Glue](topic-guides/glue.md), [EMR](topic-guides/emr.md), [Vectors and LLMs](topic-guides/vectors-and-llms.md) |
-| 1.3 | Schedule work, route events, retry failed steps, and notify operators | [Orchestration](topic-guides/orchestration.md), [Pipeline engineering](topic-guides/pipeline-engineering.md) |
-| 1.4 | Design code for distributed processing, test changes, manage Lambda capacity, and deploy repeatably | [Pipeline engineering](topic-guides/pipeline-engineering.md), [Lambda capacity](topic-guides/lambda.md#reserved-and-provisioned-concurrency), [SQL](topic-guides/sql-patterns.md) |
-| 2.1 | Choose storage by workload. Understand federated access, open table formats, and vector indexes | [Databases](topic-guides/databases.md), [Redshift](topic-guides/redshift.md), [Iceberg](topic-guides/iceberg.md), [Vector indexes](topic-guides/vectors-and-llms.md) |
-| 2.2 | Keep table metadata in sync and distinguish technical and business catalogs | [Catalog](topic-guides/catalog.md), [Unified Studio](topic-guides/catalog-and-unified-studio.md) |
-| 2.3 | Load, unload, transition, retain, expire, and recover data | [S3](topic-guides/s3.md), [Redshift](topic-guides/redshift.md), [Databases](topic-guides/databases.md) |
-| 2.4 | Model data at the right grain, handle schema change, and establish lineage | [Modeling](topic-guides/data-modeling.md), [File layout](topic-guides/file-layout.md), [Vectors](topic-guides/vectors-and-llms.md) |
-| 3.1 | Automate processing and troubleshoot scheduled or event-triggered jobs | [Orchestration](topic-guides/orchestration.md), [Pipeline engineering](topic-guides/pipeline-engineering.md), [Lambda](topic-guides/lambda.md), [Data preparation](topic-guides/analysis-and-data-prep.md) |
-| 3.2 | Choose a tool for SQL, interactive exploration, or visualization | [Athena](topic-guides/athena.md), [Redshift](topic-guides/redshift.md), [Analysis](topic-guides/analysis-and-data-prep.md) |
-| 3.3 | Diagnose lag, performance, and failed loads using logs and metrics | [Monitoring](topic-guides/monitoring.md), [Redshift](topic-guides/redshift.md), [Audit](topic-guides/privacy-and-audit.md) |
-| 3.4 | Detect missing or inconsistent records, choose a sampling method, and account for skew | [Data quality](topic-guides/data-quality.md), [Data preparation](topic-guides/analysis-and-data-prep.md), [EMR](topic-guides/emr.md) |
-| 4.1 | Identify the execution principal and diagnose credential or network problems | [IAM and network access](topic-guides/security.md), [Unified Studio](topic-guides/catalog-and-unified-studio.md) |
-| 4.2 | Enforce least privilege at AWS, catalog, and database layers | [Security](topic-guides/security.md), [Lake Formation](topic-guides/governance.md) |
-| 4.3 | Apply encryption, cross-account key permissions, and masking | [Security](topic-guides/security.md), [Privacy](topic-guides/privacy-and-audit.md) |
-| 4.4 | Collect and query the right audit evidence | [Privacy and audit](topic-guides/privacy-and-audit.md), [Monitoring](topic-guides/monitoring.md) |
-| 4.5 | Govern sharing, classify sensitive data, and keep it in approved locations | [Governance](topic-guides/governance.md), [Unified Studio](topic-guides/catalog-and-unified-studio.md), [Privacy](topic-guides/privacy-and-audit.md) |
-
-[Official certification page](https://aws.amazon.com/certification/certified-data-engineer-associate/) · [Official exam guide PDF](https://docs.aws.amazon.com/pdfs/aws-certification/latest/data-engineer-associate-01/data-engineer-associate-01.pdf)
-
-## Ingestion and orchestration skills
-
-| Skills | Section |
+| Change | Where it is taught |
 |---|---|
-| 1.1.1 | [Consumer integrations and source selection](topic-guides/streaming.md#consumer-integrations-and-source-selection) |
-| 1.1.2 | [Batch ingestion by source and destination](topic-guides/data-movement.md#batch-ingestion-by-source-and-destination) |
-| 1.1.3 | [Manifests and incremental loads](topic-guides/data-movement.md#manifests-and-incremental-loads) |
-| 1.1.5 | [Schedules, time zones, and backfills](topic-guides/orchestration.md#schedules-time-zones-and-backfills) |
-| 1.1.6 | [S3 events and EventBridge routing](topic-guides/orchestration.md#s3-events-and-eventbridge-routing) |
-| 1.1.7 | [Read a Kinesis stream with Lambda](topic-guides/lambda.md#read-a-kinesis-stream-with-lambda) |
-| 1.1.10 | [Fan-in, fan-out, and throughput](topic-guides/streaming.md#fan-in-fan-out-and-throughput) |
-| 1.1.11 | [Retention, checkpoints, and replay](topic-guides/streaming.md#retention-checkpoints-and-replay) |
-| 1.1.12 | [Event-time state and stateless transforms](topic-guides/streaming.md#event-time-state-and-stateless-transforms) |
-| 1.2.2 / 2.2.5 | [Glue connections, networking, and credentials](topic-guides/glue.md#glue-connections-networking-and-credentials) |
-| 1.2.4 | [Glue worker, execution, and scaling choices](topic-guides/glue.md#numbers-and-defaults) |
-| 1.2.3 / 1.2.7 | [Joining sources, schema alignment, and skew](topic-guides/glue.md#joining-sources-schema-alignment-and-skew) |
-| 1.3.1 / 3.1.1 | [Step Functions, Glue workflows, and Airflow](topic-guides/orchestration.md#step-functions-glue-workflows-and-airflow) |
-| 1.3.2 | [Queues, backpressure, retries, and recovery](topic-guides/orchestration.md#queues-backpressure-retries-and-recovery) |
-| 1.3.3 | [Service integrations and execution history](topic-guides/orchestration.md#service-integrations-and-execution-history) |
-| 1.4.2 | [Reserved and provisioned concurrency](topic-guides/lambda.md#reserved-and-provisioned-concurrency) |
-| 1.4.7 | [Temporary and shared storage](topic-guides/lambda.md#temporary-and-shared-storage) |
-| 3.1.2 | [Debug task failures in Step Functions and MWAA](topic-guides/orchestration.md#debug-task-failures-in-step-functions-and-mwaa) |
-| 3.1.8 | [Choose Lambda for a data pipeline](topic-guides/lambda.md#choose-lambda-for-a-data-pipeline) |
-| 3.1.9 | [EventBridge Rules, Scheduler, and Pipes](topic-guides/orchestration.md#eventbridge-rules-scheduler-and-pipes) |
+| New skill 1.2.10: integrate LLMs for data processing | [LLM extraction and output validation](topic-guides/vectors-and-llms.md#llm-extraction-and-output-validation) |
+| New skill 2.1.7: manage open table formats such as Iceberg | [Iceberg maintenance and Amazon S3 Tables](topic-guides/iceberg.md#iceberg-maintenance-and-amazon-s3-tables) |
+| New skill 2.1.8: vector index types (HNSW, IVF) | [HNSW and IVF trade-offs](topic-guides/vectors-and-llms.md#hnsw-and-ivf-trade-offs) |
+| New skill 2.2.6: business catalogs (SageMaker Catalog) | [Publish an asset and approve subscriptions](topic-guides/catalog-and-unified-studio.md#publish-an-asset-and-approve-subscriptions) |
+| New skill 2.4.6: vectorization (Bedrock Knowledge Bases) | [Chunking, embeddings, and Bedrock Knowledge Bases](topic-guides/vectors-and-llms.md#chunking-embeddings-and-bedrock-knowledge-bases) |
+| New skill 4.1.7: Unified Studio domains, domain units, projects | [Domains, domain units, and projects](topic-guides/catalog-and-unified-studio.md#domains-domain-units-and-projects) |
+| New skills 4.5.6 and 4.5.7: catalog project access, governance frameworks | [Project subscriptions](topic-guides/catalog-and-unified-studio.md#project-subscriptions-and-fulfillment) · [Governance patterns](topic-guides/governance.md#central-governance-delegated-ownership-and-sharing) |
+| Added to scope: Aurora, Amazon Q, Bedrock, Kendra, Data Exchange, S3 Tables | [Service recognition](topic-guides/service-recognition.md) · [S3 Tables](topic-guides/iceberg.md#iceberg-maintenance-and-amazon-s3-tables) |
+| Removed from scope: Cloud9, CodeCommit, AWS SCT | [Deployment](topic-guides/deployment.md#numbers-and-facts) · [Schema conversion](topic-guides/data-modeling.md#dms-schema-conversion-and-manual-action-items) |
 
-## Shared exam objectives
+Details: [exam guide revisions](https://docs.aws.amazon.com/aws-certification/latest/data-engineer-associate-01/dea-01-revisions.html).
 
-Keep both official skill IDs when looking up the exam guide. Each pair shares a teaching destination and counts once toward practice coverage.
+## Shared objectives
 
-| Official skill IDs | Shared teaching destination |
+AWS repeats five skills across domains. Each pair shares one teaching section and counts once toward practice coverage, so the 120 official skills become 115 distinct objectives.
+
+| Official skill IDs | Shared teaching section |
 |---|---|
 | 1.3.4 / 3.3.3 | [Alerts, buffers, and failed deliveries](topic-guides/orchestration.md#alerts-buffers-and-failed-deliveries) |
-| 1.4.5 / 1.4.8 | [Infrastructure as code](topic-guides/pipeline-engineering.md#how-the-pieces-fit) |
-| 3.3.5 / 4.4.1 | [CloudTrail evidence](topic-guides/privacy-and-audit.md#choose-the-right-evidence) |
-| 3.3.7 / 4.4.2 | [CloudWatch application logs](topic-guides/monitoring.md#how-to-decide) |
-| 3.3.8 / 4.4.4 | [Log analysis](topic-guides/privacy-and-audit.md#choose-the-right-evidence) |
+| 1.4.5 / 1.4.8 | [Infrastructure as code](topic-guides/deployment.md#infrastructure-as-code-and-deployment-review) |
+| 3.3.5 / 4.4.1 | [CloudTrail event categories](topic-guides/privacy-and-audit.md#cloudtrail-event-categories-and-selectors) |
+| 3.3.7 / 4.4.2 | [CloudWatch log groups and retention](topic-guides/monitoring.md#cloudwatch-log-groups-retention-and-queries) |
+| 3.3.8 / 4.4.4 | [Log analysis tools](topic-guides/monitoring.md#logs-insights-athena-emr-and-opensearch) |
+
+## Skill-by-skill map
+
+Every official skill links to the section that teaches it and to the practice questions that test it. **Bold** marks the question where the skill is the primary target. This table is generated by `scripts/build_practice.py` from `practice/source/skills.tsv`.
+
+<!-- skill-table:start -->
+| Skill | Objective | Teaching section | Practice (bold = primary) |
+|---|---|---|---|
+| 1.1.1 | Read data from streaming sources | [Consumer integrations and source selection](topic-guides/streaming.md#consumer-integrations-and-source-selection) | Bank 1, Mock 25, **Timed 24** |
+| 1.1.2 | Read data from batch sources | [Batch ingestion by source and destination](topic-guides/data-movement.md#batch-ingestion-by-source-and-destination) | Bank 34, **Mock 1**, Mock 14 |
+| 1.1.3 | Configure batch ingestion options | [Manifests and incremental loads](topic-guides/data-movement.md#manifests-and-incremental-loads) | Mock 1, **Mock 5** |
+| 1.1.4 | Consume data APIs | [API pagination and resumable ingestion](topic-guides/apis-and-sdks.md#api-pagination-and-resumable-ingestion) | Bank 5, **Timed 10** |
+| 1.1.5 | Set up schedulers for jobs and crawlers | [Schedules, time zones, and backfills](topic-guides/orchestration.md#schedules-time-zones-and-backfills) | Bank 6, **Mock 9** |
+| 1.1.6 | Set up event triggers | [S3 events and EventBridge routing](topic-guides/orchestration.md#s3-events-and-eventbridge-routing) | Bank 6, **Mock 13**, Mock 53 |
+| 1.1.7 | Call a Lambda function from Kinesis | [Read a Kinesis stream with Lambda](topic-guides/lambda.md#read-a-kinesis-stream-with-lambda) | **Bank 29**, **Timed 18** |
+| 1.1.8 | Create IP allowlists for data source connections | [Source allowlists and network paths](topic-guides/networking.md#source-allowlists-and-network-paths) | Mock 12, **Mock 17** |
+| 1.1.9 | Handle throttling and rate limits in DynamoDB, RDS, and Kinesis | [Throttle signals and bounded retries](topic-guides/apis-and-sdks.md#throttle-signals-and-bounded-retries) | **Bank 19**, **Mock 21**, Mock 56, Timed 6, Timed 10 |
+| 1.1.10 | Manage fan-in and fan-out for streaming data | [Fan-in, fan-out, and throughput](topic-guides/streaming.md#fan-in-fan-out-and-throughput) | Bank 19, **Mock 25**, Timed 1 |
+| 1.1.11 | Describe replayability of ingestion pipelines | [Retention, checkpoints, and replay](topic-guides/streaming.md#retention-checkpoints-and-replay) | Mock 25, **Timed 1** |
+| 1.1.12 | Define stateful and stateless data transactions | [Event-time state and stateless transforms](topic-guides/streaming.md#event-time-state-and-stateless-transforms) | **Bank 1**, Bank 29 |
+| 1.2.1 | Optimize container usage (EKS, ECS) | [Container sizing and deployment choices](topic-guides/pipeline-engineering.md#container-sizing-and-deployment-choices) | **Bank 30**, **Mock 29** |
+| 1.2.2 | Connect to data sources over JDBC and ODBC | [Glue connections, networking, and credentials](topic-guides/glue.md#glue-connections-networking-and-credentials) | Mock 64, **Timed 4**, Timed 32 |
+| 1.2.3 | Integrate data from multiple sources | [Joining sources, schema alignment, and skew](topic-guides/glue.md#joining-sources-schema-alignment-and-skew) | **Mock 33**, Timed 31 |
+| 1.2.4 | Optimize costs while processing data | [Numbers and defaults](topic-guides/glue.md#numbers-and-defaults) | Mock 37, **Timed 15** |
+| 1.2.5 | Choose a transformation service for the requirements | [Transformation engine decisions](topic-guides/emr.md#transformation-engine-decisions) | Mock 29, **Mock 37**, Timed 15 |
+| 1.2.6 | Transform data between formats | [From raw CSV to partitioned Parquet](topic-guides/file-layout.md#from-raw-csv-to-partitioned-parquet) | Timed 23, **Timed 28** |
+| 1.2.7 | Troubleshoot transformation failures and performance | [Spark execution stages, logs, and failure isolation](topic-guides/emr.md#spark-execution-stages-logs-and-failure-isolation) | **Bank 20**, Mock 33, **Mock 41**, Mock 43 |
+| 1.2.8 | Create data APIs for other systems | [API Gateway, Lambda, and DynamoDB serving](topic-guides/apis-and-sdks.md#api-gateway-lambda-and-dynamodb-serving) | **Bank 32**, **Mock 45** |
+| 1.2.9 | Define volume, velocity, and variety of data | [Volume, velocity, and variety](topic-guides/file-layout.md#volume-velocity-and-variety) | **Bank 2**, Mock 49 |
+| 1.2.10 | Integrate LLMs for data processing | [LLM extraction and output validation](topic-guides/vectors-and-llms.md#llm-extraction-and-output-validation) | Mock 46, **Mock 49** |
+| 1.3.1 | Build ETL workflows with orchestration services | [Step Functions, Glue workflows, and Airflow](topic-guides/orchestration.md#step-functions-glue-workflows-and-airflow) | Mock 35, Mock 62, **Timed 8** |
+| 1.3.2 | Build resilient, scalable, fault-tolerant pipelines | [Queues, backpressure, retries, and recovery](topic-guides/orchestration.md#queues-backpressure-retries-and-recovery) | **Bank 27**, Bank 33, Mock 13, **Mock 52** |
+| 1.3.3 | Implement and maintain serverless workflows | [Service integrations and execution history](topic-guides/orchestration.md#service-integrations-and-execution-history) | Bank 27, Mock 23, **Mock 55**, Timed 8 |
+| 1.3.4 | Send alerts with notification services | [Alerts, buffers, and failed deliveries](topic-guides/orchestration.md#alerts-buffers-and-failed-deliveries) | Mock 52, **Timed 21** |
+| 1.4.1 | Optimize code to reduce runtime | [Batching, parallelism, and pushdown](topic-guides/pipeline-engineering.md#batching-parallelism-and-pushdown) | Bank 3, Bank 30, **Mock 56** |
+| 1.4.2 | Configure Lambda concurrency and performance | [Reserved and provisioned concurrency](topic-guides/lambda.md#reserved-and-provisioned-concurrency) | Bank 23, Mock 59, **Timed 6** |
+| 1.4.3 | Use programming languages and frameworks | [SQL, Python, and Spark workload choices](topic-guides/pipeline-engineering.md#sql-python-and-spark-workload-choices) | **Bank 3**, Mock 61 |
+| 1.4.4 | Apply software engineering best practices | [Engineering practices for data pipelines](topic-guides/deployment.md#engineering-practices-for-data-pipelines) | **Mock 57**, Mock 60 |
+| 1.4.5 | Deploy with infrastructure as code | [Infrastructure as code and deployment review](topic-guides/deployment.md#infrastructure-as-code-and-deployment-review) | Mock 58, **Timed 30**, Timed 30 |
+| 1.4.6 | Package and deploy with AWS SAM | [SAM package, deploy, and rollback](topic-guides/deployment.md#sam-package-deploy-and-rollback) | **Bank 31**, **Mock 58** |
+| 1.4.7 | Use and mount storage in Lambda | [Temporary and shared storage](topic-guides/lambda.md#temporary-and-shared-storage) | Bank 31, **Mock 59** |
+| 1.4.8 | Use CloudFormation and CDK for repeatable deployment | [CloudFormation stacks and CDK synthesis](topic-guides/deployment.md#cloudformation-stacks-and-cdk-synthesis) | Shared with 1.4.5: Mock 58, **Timed 30**, Timed 30 |
+| 1.4.9 | Describe CI/CD for data pipelines | [Continuous integration and delivery](topic-guides/deployment.md#continuous-integration-and-delivery) | Mock 57, **Mock 60** |
+| 1.4.10 | Define distributed computing | [Distributed processing, shuffle, and workers](topic-guides/emr.md#distributed-processing-shuffle-and-workers) | Mock 54, **Mock 61** |
+| 1.4.11 | Describe data structures and algorithms | [Maps, trees, and graphs](topic-guides/pipeline-engineering.md#maps-trees-and-graphs) | Mock 61, **Mock 62** |
+| 2.1.1 | Choose storage for cost and performance | [Cost, latency, and operational trade-offs](topic-guides/databases.md#cost-latency-and-operational-trade-offs) | Bank 12, Mock 2, **Mock 34**, Timed 29 |
+| 2.1.2 | Configure storage for access patterns | [Keys, indexes, and warehouse layout](topic-guides/databases.md#keys-indexes-and-warehouse-layout) | Mock 21, Mock 26, Mock 65, **Timed 19** |
+| 2.1.3 | Apply specialized stores (HNSW on Aurora, MemoryDB) | [MemoryDB, ElastiCache, DynamoDB, and vector stores](topic-guides/databases.md#memorydb-elasticache-dynamodb-and-vector-stores) | **Bank 21**, **Mock 2**, Mock 63 |
+| 2.1.4 | Integrate migration tools such as Transfer Family | [Batch ingestion by source and destination](topic-guides/data-movement.md#batch-ingestion-by-source-and-destination) | Mock 1, **Mock 53** |
+| 2.1.5 | Use federated queries, materialized views, and Spectrum | [Spectrum, federation, and materialized views](topic-guides/redshift.md#spectrum-federation-and-materialized-views) | Mock 36, **Timed 31** |
+| 2.1.6 | Manage locks in Redshift and RDS | [Redshift and RDS transactions, locks, and contention](topic-guides/redshift.md#redshift-and-rds-transactions-locks-and-contention) | **Bank 33**, **Mock 22** |
+| 2.1.7 | Manage open table formats such as Iceberg | [Iceberg maintenance and Amazon S3 Tables](topic-guides/iceberg.md#iceberg-maintenance-and-amazon-s3-tables) | Bank 22, **Timed 12** |
+| 2.1.8 | Describe vector index types (HNSW, IVF) | [HNSW and IVF trade-offs](topic-guides/vectors-and-llms.md#hnsw-and-ivf-trade-offs) | Bank 21, Mock 46, **Mock 63** |
+| 2.2.1 | Use data catalogs to consume data | [Read a cataloged dataset](topic-guides/catalog.md#read-a-cataloged-dataset) | **Bank 4**, Mock 18, Mock 50 |
+| 2.2.2 | Build a technical catalog (Glue, Hive metastore) | [Glue Data Catalog and Hive metastore](topic-guides/catalog-and-unified-studio.md#glue-data-catalog-and-hive-metastore) | Bank 4, **Mock 50** |
+| 2.2.3 | Discover schemas with Glue crawlers | [Crawler discovery and schema change policy](topic-guides/catalog.md#crawler-discovery-and-schema-change-policy) | Bank 26, **Mock 18**, Mock 30, Timed 7 |
+| 2.2.4 | Synchronize partitions with the catalog | [Registration, repair, and partition projection](topic-guides/catalog.md#registration-repair-and-partition-projection) | **Bank 26**, **Timed 7** |
+| 2.2.5 | Create source and target connections for cataloging | [Glue connections, networking, and credentials](topic-guides/glue.md#glue-connections-networking-and-credentials) | **Mock 64**, Timed 4 |
+| 2.2.6 | Create and manage business catalogs (SageMaker Catalog) | [Publish an asset and approve subscriptions](topic-guides/catalog-and-unified-studio.md#publish-an-asset-and-approve-subscriptions) | **Mock 6**, Mock 42 |
+| 2.3.1 | Load and unload data between S3 and Redshift | [COPY, staging, and UNLOAD](topic-guides/redshift.md#copy-staging-and-unload) | Mock 5, Mock 22, **Timed 16**, Timed 31 |
+| 2.3.2 | Move data between storage tiers with lifecycle | [Storage classes, retrieval, and lifecycle rules](topic-guides/s3.md#storage-classes-retrieval-and-lifecycle-rules) | Mock 38, **Timed 25** |
+| 2.3.3 | Expire data by age | [Expiration rules for current and older versions](topic-guides/s3.md#expiration-rules-for-current-and-older-versions) | **Mock 38**, Timed 25 |
+| 2.3.4 | Use S3 versioning and DynamoDB TTL | [Versioned deletes and DynamoDB TTL comparison](topic-guides/s3.md#versioned-deletes-and-dynamodb-ttl-comparison) | Mock 10, Mock 38, **Mock 65**, Timed 5 |
+| 2.3.5 | Delete or retain data to meet requirements | [Deletion, Object Lock, and legal holds](topic-guides/s3.md#deletion-object-lock-and-legal-holds) | **Timed 5**, Timed 25 |
+| 2.3.6 | Protect data with resiliency and availability | [Replication, version recovery, and restore testing](topic-guides/s3.md#replication-version-recovery-and-restore-testing) | **Mock 10**, Timed 5 |
+| 2.4.1 | Design schemas for Redshift, DynamoDB, and Lake Formation | [Grain, keys, sort order, and governed schemas](topic-guides/data-modeling.md#grain-keys-sort-order-and-governed-schemas) | **Mock 26**, Timed 19 |
+| 2.4.2 | Address changes to data characteristics | [Compatible and breaking schema changes](topic-guides/data-modeling.md#compatible-and-breaking-schema-changes) | **Bank 22**, **Mock 30**, Timed 12 |
+| 2.4.3 | Perform schema conversion | [DMS Schema Conversion and manual action items](topic-guides/data-modeling.md#dms-schema-conversion-and-manual-action-items) | **Bank 34**, **Mock 14** |
+| 2.4.4 | Establish data lineage | [Catalog lineage and SageMaker ML Lineage Tracking](topic-guides/data-modeling.md#catalog-lineage-and-sagemaker-ml-lineage-tracking) | Mock 27, **Mock 42** |
+| 2.4.5 | Apply indexing, partitioning, and compression | [File layout, pruning, compression, and index trade-offs](topic-guides/file-layout.md#file-layout-pruning-compression-and-index-trade-offs) | Bank 2, **Timed 23**, Timed 28 |
+| 2.4.6 | Describe vectorization concepts | [Chunking, embeddings, and Bedrock Knowledge Bases](topic-guides/vectors-and-llms.md#chunking-embeddings-and-bedrock-knowledge-bases) | Bank 21, **Mock 46** |
+| 3.1.1 | Orchestrate pipelines with MWAA and Step Functions | [Step Functions, Glue workflows, and Airflow](topic-guides/orchestration.md#step-functions-glue-workflows-and-airflow) | **Mock 35**, Timed 27 |
+| 3.1.2 | Troubleshoot managed workflows | [Debug task failures in Step Functions and MWAA](topic-guides/orchestration.md#debug-task-failures-in-step-functions-and-mwaa) | Mock 55, **Timed 27** |
+| 3.1.3 | Call SDKs from code | [AWS SDK clients, pagination, and errors](topic-guides/apis-and-sdks.md#aws-sdk-clients-pagination-and-errors) | Bank 32, **Mock 3**, Mock 56 |
+| 3.1.4 | Use EMR, Redshift, and Glue features to process data | [Operational choices on EMR on EC2](topic-guides/emr.md#operational-choices-on-emr-on-ec2) | Mock 3, **Mock 54** |
+| 3.1.5 | Consume and maintain data APIs | [API timeouts, pagination, authentication, and checkpoints](topic-guides/apis-and-sdks.md#api-timeouts-pagination-authentication-and-checkpoints) | **Bank 5**, Mock 45 |
+| 3.1.6 | Prepare data for transformation (DataBrew, Unified Studio) | [DataBrew recipes and Unified Studio preparation](topic-guides/analysis-and-data-prep.md#databrew-recipes-and-unified-studio-preparation) | **Mock 11**, Mock 39 |
+| 3.1.7 | Query data with Athena | [Workgroups and cost control](topic-guides/athena.md#workgroups-and-cost-control) | Bank 4, **Timed 20** |
+| 3.1.8 | Automate processing with Lambda | [Choose Lambda for a data pipeline](topic-guides/lambda.md#choose-lambda-for-a-data-pipeline) | **Bank 6**, Mock 52 |
+| 3.1.9 | Manage events and schedulers | [EventBridge Rules, Scheduler, and Pipes](topic-guides/orchestration.md#eventbridge-rules-scheduler-and-pipes) | Mock 9, **Mock 23** |
+| 3.2.1 | Visualize data (DataBrew, QuickSight) | [QuickSight dashboards and DataBrew profiling](topic-guides/analysis-and-data-prep.md#quicksight-dashboards-and-databrew-profiling) | Bank 7, **Mock 15** |
+| 3.2.2 | Verify and clean data | [Profile, validate, and correct a batch](topic-guides/analysis-and-data-prep.md#profile-validate-and-correct-a-batch) | **Bank 7**, Bank 28, Mock 11 |
+| 3.2.3 | Query and create views with SQL in Redshift and Athena | [Athena and Redshift queries and views](topic-guides/sql-patterns.md#athena-and-redshift-queries-and-views) | Mock 15, **Mock 47**, Timed 20 |
+| 3.2.4 | Explore data with Athena Spark notebooks | [Athena for Apache Spark notebook workflow](topic-guides/analysis-and-data-prep.md#athena-for-apache-spark-notebook-workflow) | **Bank 35**, **Mock 39** |
+| 3.2.5 | Compare provisioned and serverless services | [Serverless and provisioned cost and scaling](topic-guides/redshift.md#serverless-and-provisioned-cost-and-scaling) | Mock 34, Timed 13, **Timed 29** |
+| 3.2.6 | Define aggregation, rolling average, grouping, pivoting | [Worked aggregation, window, and pivot queries](topic-guides/sql-patterns.md#worked-aggregation-window-and-pivot-queries) | Bank 10, Mock 47, **Timed 3** |
+| 3.3.1 | Extract logs for audits | [Audit evidence, scope, and retention](topic-guides/privacy-and-audit.md#audit-evidence-scope-and-retention) | **Bank 8**, Bank 16, Bank 38 |
+| 3.3.2 | Deploy logging and monitoring for traceability | [Correlation IDs, freshness, and alarms](topic-guides/monitoring.md#correlation-ids-freshness-and-alarms) | **Mock 27**, Timed 21 |
+| 3.3.3 | Use notifications during monitoring | [Alerts, buffers, and failed deliveries](topic-guides/orchestration.md#alerts-buffers-and-failed-deliveries) | Shared with 1.3.4: Mock 52, **Timed 21** |
+| 3.3.4 | Troubleshoot performance issues | [Lag, skew, scan volume, and query queues](topic-guides/monitoring.md#lag-skew-scan-volume-and-query-queues) | Bank 20, **Bank 23**, Mock 27, **Timed 13** |
+| 3.3.5 | Use CloudTrail to track API calls | [CloudTrail event categories and selectors](topic-guides/privacy-and-audit.md#cloudtrail-event-categories-and-selectors) | Bank 8, **Mock 31**, Mock 31, Mock 40 |
+| 3.3.6 | Troubleshoot and maintain Glue and EMR pipelines | [Spark execution stages, logs, and failure isolation](topic-guides/emr.md#spark-execution-stages-logs-and-failure-isolation) | Mock 41, **Mock 43**, Timed 14 |
+| 3.3.7 | Configure CloudWatch Logs for application data | [CloudWatch log groups, retention, and queries](topic-guides/monitoring.md#cloudwatch-log-groups-retention-and-queries) | Bank 9, **Mock 7**, Mock 7 |
+| 3.3.8 | Analyze logs with AWS services | [Logs Insights, Athena, EMR, and OpenSearch](topic-guides/monitoring.md#logs-insights-athena-emr-and-opensearch) | **Bank 9**, Bank 9, Bank 17 |
+| 3.4.1 | Run data quality checks during processing | [Validate, quarantine, and reconcile rows](topic-guides/data-quality.md#validate-quarantine-and-reconcile-rows) | Mock 51, **Timed 9** |
+| 3.4.2 | Define data quality rules | [Glue DQDL and DataBrew rule sets](topic-guides/data-quality.md#glue-dqdl-and-databrew-rule-sets) | **Bank 28**, **Mock 51**, Timed 9 |
+| 3.4.3 | Investigate data consistency | [Profile drift and reconcile counts](topic-guides/data-quality.md#profile-drift-and-reconcile-counts) | Bank 7, **Bank 10**, Mock 19 |
+| 3.4.4 | Describe data sampling techniques | [Random and stratified sampling](topic-guides/analysis-and-data-prep.md#random-and-stratified-sampling) | Bank 35, **Mock 19** |
+| 3.4.5 | Implement data skew mechanisms | [Diagnose and mitigate partition and join skew](topic-guides/emr.md#diagnose-and-mitigate-partition-and-join-skew) | Mock 61, **Timed 14** |
+| 4.1.1 | Update VPC security groups | [Security groups for private database access](topic-guides/networking.md#security-groups-for-private-database-access) | Bank 25, Mock 17, Timed 4, **Timed 32** |
+| 4.1.2 | Create and update IAM groups, roles, endpoints, and services | [Identity types and endpoint access](topic-guides/security.md#identity-types-and-endpoint-access) | **Bank 11**, Mock 16 |
+| 4.1.3 | Create and rotate credentials (Secrets Manager) | [Secrets Manager and Parameter Store](topic-guides/security.md#secrets-manager-and-parameter-store) | **Mock 8**, Mock 24 |
+| 4.1.4 | Set up IAM roles for Lambda, API Gateway, CLI, CloudFormation | [Trust and permission policies by caller](topic-guides/security.md#trust-and-permission-policies-by-caller) | Bank 11, Bank 24, **Mock 16** |
+| 4.1.5 | Apply IAM policies to endpoints and services (Access Points, PrivateLink) | [Access points, gateway endpoints, and PrivateLink](topic-guides/networking.md#access-points-gateway-endpoints-and-privatelink) | **Bank 25**, Bank 37, **Mock 12** |
+| 4.1.6 | Describe managed and unmanaged services | [Shared responsibility across deployment models](topic-guides/networking.md#shared-responsibility-across-deployment-models) | **Bank 12**, Timed 29 |
+| 4.1.7 | Use domains, domain units, and projects in Unified Studio | [Domains, domain units, and projects](topic-guides/catalog-and-unified-studio.md#domains-domain-units-and-projects) | **Mock 28**, Mock 44 |
+| 4.2.1 | Create custom IAM policies | [Build a scoped policy from required operations](topic-guides/security.md#build-a-scoped-policy-from-required-operations) | **Bank 13**, Mock 32 |
+| 4.2.2 | Store application and database credentials | [Secrets Manager and Parameter Store](topic-guides/security.md#secrets-manager-and-parameter-store) | Mock 8, **Mock 24** |
+| 4.2.3 | Grant database users, groups, and roles access in Redshift | [Database roles, grants, and schema access](topic-guides/redshift.md#database-roles-grants-and-schema-access) | **Bank 14**, Mock 36 |
+| 4.2.4 | Manage permissions through Lake Formation | [Lake Formation grants across query engines](topic-guides/governance.md#lake-formation-grants-across-query-engines) | Bank 14, **Timed 11** |
+| 4.2.5 | Apply role-based, tag-based, and attribute-based authorization | [RBAC, IAM ABAC, and LF-tags](topic-guides/governance.md#rbac-iam-abac-and-lf-tags) | **Mock 4**, Timed 11, Timed 26 |
+| 4.2.6 | Construct least-privilege policies | [Least-privilege policy examples and tests](topic-guides/security.md#least-privilege-policy-examples-and-tests) | Bank 13, **Bank 24**, Mock 4, **Mock 32** |
+| 4.3.1 | Apply masking and anonymization | [Dynamic masking, redaction, and tokenization](topic-guides/privacy-and-audit.md#dynamic-masking-redaction-and-tokenization) | **Bank 36**, **Timed 22** |
+| 4.3.2 | Use KMS keys to encrypt and decrypt data | [KMS keys, grants, and policies](topic-guides/security.md#kms-keys-grants-and-policies) | **Bank 15**, Mock 20, Timed 2 |
+| 4.3.3 | Configure encryption across account boundaries | [Cross-account encrypted object access](topic-guides/security.md#cross-account-encrypted-object-access) | Bank 15, **Timed 2** |
+| 4.3.4 | Enable encryption in transit or before transit | [TLS, client-side encryption, and S3 encryption modes](topic-guides/privacy-and-audit.md#tls-client-side-encryption-and-s3-encryption-modes) | **Bank 37**, **Mock 20** |
+| 4.4.1 | Use CloudTrail to track API calls | [CloudTrail event categories and selectors](topic-guides/privacy-and-audit.md#cloudtrail-event-categories-and-selectors) | Shared with 3.3.5: Bank 8, **Mock 31**, Mock 31, Mock 40 |
+| 4.4.2 | Use CloudWatch Logs to store application logs | [CloudWatch log groups, retention, and queries](topic-guides/monitoring.md#cloudwatch-log-groups-retention-and-queries) | Shared with 3.3.7: Bank 9, **Mock 7**, Mock 7 |
+| 4.4.3 | Use CloudTrail Lake for centralized queries | [CloudTrail Lake and account availability](topic-guides/privacy-and-audit.md#cloudtrail-lake-and-account-availability) | Bank 8, **Bank 16** |
+| 4.4.4 | Analyze logs with AWS services | [Query audit logs in Athena, Logs Insights, or OpenSearch](topic-guides/privacy-and-audit.md#query-audit-logs-in-athena-logs-insights-or-opensearch) | Shared with 3.3.8: **Bank 9**, Bank 9, Bank 17 |
+| 4.4.5 | Integrate services for large-volume logging (EMR) | [S3 log archive and distributed processing with EMR](topic-guides/monitoring.md#s3-log-archive-and-distributed-processing-with-emr) | **Bank 17**, **Bank 38** |
+| 4.5.1 | Grant permissions for data sharing | [Redshift datashares and Lake Formation sharing](topic-guides/governance.md#redshift-datashares-and-lake-formation-sharing) | **Mock 36**, Mock 48 |
+| 4.5.2 | Implement PII identification (Macie with Lake Formation) | [Macie discovery and Lake Formation access](topic-guides/governance.md#macie-discovery-and-lake-formation-access) | Bank 36, **Timed 26** |
+| 4.5.3 | Prevent backups or replication to disallowed Regions | [Regional controls for replication and backups](topic-guides/privacy-and-audit.md#regional-controls-for-replication-and-backups) | Bank 18, **Timed 17** |
+| 4.5.4 | View configuration changes (AWS Config) | [Audit evidence, scope, and retention](topic-guides/privacy-and-audit.md#audit-evidence-scope-and-retention) | Mock 31, **Mock 40** |
+| 4.5.5 | Maintain data sovereignty | [Data residency, sovereignty, and exception reviews](topic-guides/privacy-and-audit.md#data-residency-sovereignty-and-exception-reviews) | **Bank 18**, Timed 17 |
+| 4.5.6 | Manage data access through SageMaker Catalog projects | [Project subscriptions and fulfillment](topic-guides/catalog-and-unified-studio.md#project-subscriptions-and-fulfillment) | Mock 6, **Mock 44** |
+| 4.5.7 | Describe governance frameworks and sharing patterns | [Central governance, delegated ownership, and sharing](topic-guides/governance.md#central-governance-delegated-ownership-and-sharing) | Mock 28, **Mock 48** |
+<!-- skill-table:end -->
+
+[Official certification page](https://aws.amazon.com/certification/certified-data-engineer-associate/) · [Official exam guide PDF](https://docs.aws.amazon.com/pdfs/aws-certification/latest/data-engineer-associate-01/data-engineer-associate-01.pdf)

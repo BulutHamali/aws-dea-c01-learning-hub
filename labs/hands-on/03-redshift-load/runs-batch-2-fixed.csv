@@ -1,0 +1,5 @@
+run_id,run_date,instrument,reads
+R01,2026-01-01,inst-a,200
+R02,2026-01-01,inst-b,150
+R04,2026-01-02,inst-b,90
+R05,2026-01-03,inst-c,320

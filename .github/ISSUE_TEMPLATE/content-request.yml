@@ -1,0 +1,26 @@
+name: Learning content request
+description: Suggest a decision guide, scenario, diagram, or accessibility improvement
+title: "[Content]: "
+labels: [content]
+body:
+  - type: textarea
+    id: learner_problem
+    attributes:
+      label: What learner problem would this solve?
+      placeholder: Learners confuse Spectrum with federated query
+    validations:
+      required: true
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed improvement
+    validations:
+      required: true
+  - type: checkboxes
+    id: integrity
+    attributes:
+      label: Content integrity
+      options:
+        - label: This request does not contain recalled live-exam or proprietary practice-test content.
+          required: true
+

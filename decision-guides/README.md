@@ -26,5 +26,10 @@ Read the workload first. Identify its source, latency, required transformations,
 | Publish ownership and dataset definitions for business users | [SageMaker Catalog](../topic-guides/catalog-and-unified-studio.md) | Glue Data Catalog holds technical metadata for query engines |
 | Find items similar in meaning across a large collection | [Vector search](../topic-guides/vectors-and-llms.md) | Evaluate latency and retrieval recall together |
 | Track resource settings over time | [AWS Config](../topic-guides/privacy-and-audit.md) | CloudTrail records API activity. CloudWatch Logs stores application logs |
+| Microsecond reads from a durable in-memory database | [MemoryDB](../topic-guides/databases.md#memorydb-elasticache-dynamodb-and-vector-stores) | A disposable cache in front of another database is ElastiCache |
+| Nobody, including admins, may delete records for a period | [S3 Object Lock, compliance mode](../topic-guides/s3.md#deletion-object-lock-and-legal-holds) | Governance mode can be bypassed. Lifecycle deletes, it never protects |
+| A partner allowlists one IP for a private job | [NAT gateway with an Elastic IP](../topic-guides/networking.md#source-allowlists-and-network-paths) | Private access to S3 or DynamoDB uses a gateway endpoint instead |
+| Licensed third-party data delivered into AWS | [AWS Data Exchange](../topic-guides/service-recognition.md#assistant-search-and-licensed-data) | Sharing your own tables between accounts uses Lake Formation or datashares |
+| Managed Iceberg tables with automatic maintenance | [Amazon S3 Tables](../topic-guides/iceberg.md#iceberg-maintenance-and-amazon-s3-tables) | Full control of layout and maintenance timing favors Iceberg in a general purpose bucket |
 
 Follow the branching examples in the [visual decision maps](visual-maps.md).

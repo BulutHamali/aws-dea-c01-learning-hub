@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  DEA-C01 hands-on lab 3. A Redshift Serverless namespace and small workgroup, a data
+  bucket, and an IAM role that Redshift uses for COPY.
+
+Parameters:
+  Prefix:
+    Type: String
+    Default: dea-lab3
+    AllowedPattern: "[a-z0-9-]{3,20}"
+
+Resources:
+  DataBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${Prefix}-data-${AWS::AccountId}-${AWS::Region}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  RedshiftLoadRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - redshift.amazonaws.com
+                - redshift-serverless.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: read-lab-data
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: s3:GetObject
+                Resource: !Sub "${DataBucket.Arn}/*"
+              - Effect: Allow
+                Action: s3:ListBucket
+                Resource: !GetAtt DataBucket.Arn
+
+  Namespace:
+    Type: AWS::RedshiftServerless::Namespace
+    Properties:
+      NamespaceName: !Sub "${Prefix}-ns"
+      DbName: lab
+      AdminUsername: labadmin
+      ManageAdminPassword: true
+      IamRoles:
+        - !GetAtt RedshiftLoadRole.Arn
+      DefaultIamRoleArn: !GetAtt RedshiftLoadRole.Arn
+
+  Workgroup:
+    Type: AWS::RedshiftServerless::Workgroup
+    Properties:
+      WorkgroupName: !Sub "${Prefix}-wg"
+      NamespaceName: !Ref Namespace
+      BaseCapacity: 8
+      MaxCapacity: 32
+      PubliclyAccessible: false
+
+Outputs:
+  DataBucketName:
+    Value: !Ref DataBucket
+  WorkgroupName:
+    Value: !Ref Workgroup
+  LoadRoleArn:
+    Value: !GetAtt RedshiftLoadRole.Arn

@@ -1,0 +1,169 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  DEA-C01 hands-on lab 2. A one-shard Kinesis stream, a Lambda consumer with a
+  switchable failure-handling configuration, a Firehose archive to S3, and an SQS
+  on-failure destination.
+
+Parameters:
+  Prefix:
+    Type: String
+    Default: dea-lab2
+    AllowedPattern: "[a-z0-9-]{3,20}"
+  SafeMode:
+    Type: String
+    AllowedValues: ["false", "true"]
+    Default: "false"
+    Description: >-
+      false = default retries (a poison record blocks the shard).
+      true = bisect, two retries, and an SQS on-failure destination.
+
+Conditions:
+  IsSafe: !Equals [!Ref SafeMode, "true"]
+
+Resources:
+  Stream:
+    Type: AWS::Kinesis::Stream
+    Properties:
+      Name: !Sub "${Prefix}-events"
+      ShardCount: 1
+      RetentionPeriodHours: 24
+      StreamModeDetails:
+        StreamMode: PROVISIONED
+
+  ArchiveBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${Prefix}-archive-${AWS::AccountId}-${AWS::Region}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  FailedRecordsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${Prefix}-failed-records"
+      MessageRetentionPeriod: 86400
+
+  ConsumerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaKinesisExecutionRole
+      Policies:
+        - PolicyName: send-failures
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: sqs:SendMessage
+                Resource: !GetAtt FailedRecordsQueue.Arn
+
+  ConsumerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${Prefix}-consumer"
+      RetentionInDays: 7
+
+  ConsumerFunction:
+    Type: AWS::Lambda::Function
+    DependsOn: ConsumerLogGroup
+    Properties:
+      FunctionName: !Sub "${Prefix}-consumer"
+      Runtime: python3.12
+      Handler: index.handler
+      Timeout: 30
+      Role: !GetAtt ConsumerRole.Arn
+      Code:
+        ZipFile: |
+          import base64, json
+
+          def handler(event, context):
+              counts = {}
+              for record in event["Records"]:
+                  body = base64.b64decode(record["kinesis"]["data"])
+                  item = json.loads(body)  # a malformed record raises here
+                  counts[item["instrument"]] = counts.get(item["instrument"], 0) + 1
+              print(json.dumps({"batch_size": len(event["Records"]), "counts": counts}))
+              return {"ok": True}
+
+  ConsumerMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      FunctionName: !Ref ConsumerFunction
+      EventSourceArn: !GetAtt Stream.Arn
+      StartingPosition: TRIM_HORIZON
+      BatchSize: 100
+      MaximumRetryAttempts: !If [IsSafe, 2, -1]
+      BisectBatchOnFunctionError: !If [IsSafe, true, false]
+      DestinationConfig: !If
+        - IsSafe
+        - OnFailure:
+            Destination: !GetAtt FailedRecordsQueue.Arn
+        - !Ref AWS::NoValue
+
+  FirehoseRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: firehose.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: read-stream-write-bucket
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kinesis:DescribeStream
+                  - kinesis:GetShardIterator
+                  - kinesis:GetRecords
+                  - kinesis:ListShards
+                Resource: !GetAtt Stream.Arn
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetBucketLocation
+                  - s3:ListBucket
+                  - s3:AbortMultipartUpload
+                Resource:
+                  - !GetAtt ArchiveBucket.Arn
+                  - !Sub "${ArchiveBucket.Arn}/*"
+
+  Archive:
+    Type: AWS::KinesisFirehose::DeliveryStream
+    Properties:
+      DeliveryStreamName: !Sub "${Prefix}-archive"
+      DeliveryStreamType: KinesisStreamAsSource
+      KinesisStreamSourceConfiguration:
+        KinesisStreamARN: !GetAtt Stream.Arn
+        RoleARN: !GetAtt FirehoseRole.Arn
+      ExtendedS3DestinationConfiguration:
+        BucketARN: !GetAtt ArchiveBucket.Arn
+        RoleARN: !GetAtt FirehoseRole.Arn
+        Prefix: "events/dt=!{timestamp:yyyy-MM-dd}/"
+        ErrorOutputPrefix: "errors/!{firehose:error-output-type}/dt=!{timestamp:yyyy-MM-dd}/"
+        BufferingHints:
+          IntervalInSeconds: 60
+          SizeInMBs: 5
+
+Outputs:
+  StreamName:
+    Value: !Ref Stream
+  ArchiveBucketName:
+    Value: !Ref ArchiveBucket
+  FailedRecordsQueueUrl:
+    Value: !Ref FailedRecordsQueue

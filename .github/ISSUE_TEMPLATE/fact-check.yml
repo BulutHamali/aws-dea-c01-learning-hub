@@ -1,0 +1,35 @@
+name: Fact check
+description: Report an outdated, ambiguous, or incorrect AWS claim
+title: "[Fact check]: "
+labels: [fact-check]
+body:
+  - type: input
+    id: location
+    attributes:
+      label: Location
+      description: File and section containing the claim
+      placeholder: topic-guides/streaming.md, Numbers and defaults
+    validations:
+      required: true
+  - type: textarea
+    id: claim
+    attributes:
+      label: Claim to review
+      description: Quote only the minimum text needed to identify the issue.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Authoritative evidence
+      description: Link to current AWS documentation or the official exam guide and explain the conflict.
+    validations:
+      required: true
+  - type: input
+    id: checked
+    attributes:
+      label: Date checked
+      placeholder: YYYY-MM-DD
+    validations:
+      required: true
+

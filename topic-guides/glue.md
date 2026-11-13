@@ -80,3 +80,5 @@ Use a Glue Spark job with explicit type handling and validation. Quarantine inva
 - [Tracking processed data with bookmarks](https://docs.aws.amazon.com/glue/latest/dg/monitor-continuations.html)
 - [DynamicFrame transforms and schema operations](https://docs.aws.amazon.com/glue/latest/dg/aws-glue-api-crawler-pyspark-extensions-dynamic-frame.html)
 - [Glue Interactive Sessions](https://docs.aws.amazon.com/glue/latest/dg/interactive-sessions.html)
+
+*Last verified against AWS documentation: November 2026.*
