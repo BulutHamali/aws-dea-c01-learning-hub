@@ -73,3 +73,5 @@ Keep Kinesis Data Streams for replay. Configure retention beyond two days, regis
 - [Kinesis PutRecords request and response](https://docs.aws.amazon.com/kinesis/latest/APIReference/API_PutRecords.html)
 - [What is Amazon Data Firehose?](https://docs.aws.amazon.com/firehose/latest/dev/what-is-this-service.html)
 - [What is Managed Service for Apache Flink?](https://docs.aws.amazon.com/managed-flink/latest/java/what-is.html)
+
+*Last verified against AWS documentation: November 2026.*

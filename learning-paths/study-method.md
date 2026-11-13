@@ -21,8 +21,8 @@ Retry misses after roughly two days and a week. Mix similar services across sess
 
 ## Simulate the test
 
-AWS lists 65 questions in 130 minutes, with single- and multiple-response questions. Use the [timed set](../practice/timed-set.md) to practice at the same pace. AWS reports a scaled score, so use your practice percentage to find weak areas. Reserve some time to review flagged questions and answer every question.
+AWS lists 65 questions in 130 minutes, with single- and multiple-response questions. Fifteen of the 65 are unscored, and you cannot tell which. Use the [32-question timed set](../practice/timed-set.md) in 64 minutes midway through your plan and the [65-question full mock](../practice/full-mock.md) in 130 minutes near the end. AWS reports a scaled score, so use your practice percentage to find weak areas. Reserve time to review flagged questions, and answer every question because there is no penalty for guessing.
 
-Before booking or sitting the exam, take the official AWS practice material where available. Use this hub’s [task map](../EXAM-MAP.md#task-by-task-study-map) to revisit the objectives behind your misses.
+Before booking or sitting the exam, take the official AWS practice material where available. Use this hub's [skill map](../EXAM-MAP.md#skill-by-skill-map) to revisit the objectives behind your misses.
 
 [Official AWS exam overview and preparation](https://aws.amazon.com/certification/certified-data-engineer-associate/)

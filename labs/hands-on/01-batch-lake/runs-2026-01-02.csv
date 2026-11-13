@@ -1,0 +1,4 @@
+run_date,run_id,instrument,reads
+2026-01-02,R05,inst-a,500
+2026-01-02,R06,inst-b,410
+2026-01-02,R06,inst-b,410

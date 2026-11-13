@@ -1,0 +1,99 @@
+front,back,tags
+Kinesis provisioned shard write capacity,"1 MB/s or 1,000 records/s per shard, whichever binds first",domain1 streaming numbers
+Kinesis shared read bandwidth per shard,2 MB/s shared by all standard consumers,domain1 streaming numbers
+Enhanced fan-out bandwidth,2 MB/s per shard for each registered consumer,domain1 streaming numbers
+Kinesis default and maximum retention,24 hours by default; up to 365 days,domain1 streaming numbers
+Kinesis vs. Firehose vs. MSK,"Kinesis: replay and independent consumers. Firehose: managed buffered delivery. MSK: existing Kafka clients",domain1 streaming
+What does resharding not fix?,"A single hot partition key. All records with that key still go to one shard",domain1 streaming
+Stateless vs. stateful processing,"Stateless uses only the current record. Stateful keeps information across records, such as a windowed count",domain1 streaming
+How does Lambda do simple stateful stream aggregation?,Tumbling windows on a Kinesis or DynamoDB Streams event source mapping,domain1 lambda
+Lambda maximum timeout,900 seconds (15 minutes),domain1 lambda numbers
+Lambda /tmp range,"512 MB default, up to 10,240 MB",domain1 lambda numbers
+Reserved vs. provisioned concurrency,"Reserved caps and guarantees capacity, protecting downstream systems. Provisioned pre-initializes environments to cut cold starts",domain1 lambda
+SQS visibility timeout guidance for Lambda,"At least six times the function timeout, plus the batching window",domain1 lambda numbers
+How to stop one bad record blocking a Kinesis shard in Lambda,"Bisect batch on error, maximum retry attempts or record age, and an on-failure destination",domain1 lambda
+Partial batch responses,"ReportBatchItemFailures lets Lambda retry only the failed SQS messages or stream records",domain1 lambda
+Glue G.1X worker,"1 DPU, 4 vCPU, 16 GB memory",domain1 glue numbers
+Glue Flex execution class,Lower-cost Spark execution for non-urgent jobs that tolerate variable start and finish times,domain1 glue
+Glue ResolveChoice,Settles a column that arrives with mixed types in a DynamicFrame,domain1 glue
+Glue job bookmark reset risk,It can reread earlier inputs while the old output is still there,domain1 glue
+Timeout vs. AccessDenied,"Timeout is the network path. AccessDenied is permissions",domain4 networking
+Glue VPC connection security group rule,A self-referencing inbound rule for all TCP ports,domain4 networking
+Partner allowlists one IP for a private Glue job,NAT gateway with an Elastic IP,domain4 networking
+Which services have gateway VPC endpoints?,S3 and DynamoDB only,domain4 networking
+Restrict a bucket to one VPC endpoint,Bucket policy condition aws:SourceVpce,domain4 networking
+DataSync vs. Transfer Family vs. AppFlow,"File share or object store copies; managed SFTP endpoint for partners; SaaS application connectors",domain1 ingestion
+DMS full load plus CDC,Initial copy plus ongoing change replication from a database that stays online,domain1 ingestion
+Snowball Edge status,No longer available to new customers. Consider DataSync or Data Transfer Terminals,domain1 ingestion
+Step Functions vs. MWAA vs. Glue workflows,"Serverless state machine with retries; existing Airflow DAGs; Glue jobs and crawlers only",domain1 orchestration
+Step Functions pattern to wait for a Glue job,The .sync service integration pattern,domain1 orchestration
+EventBridge Scheduler advantage,Cron schedules in a named time zone,domain1 orchestration
+EventBridge Pipes,"Point-to-point: source, filter, enrich, target, with no custom code",domain1 orchestration
+Notify on any Glue job failure,EventBridge rule on Glue Job State Change events targeting SNS,domain1 orchestration
+API returns HTTP 429,"Honor Retry-After, use capped exponential backoff with jitter",domain1 apis
+Write-then-checkpoint,"Write the page to a deterministic key first, then save the next token",domain1 apis
+Data API for Redshift,"Run SQL over HTTPS with IAM, no drivers or connection pools",domain1 apis
+SAM gradual deployment,AutoPublishAlias plus DeploymentPreference with alarms; CodeDeploy shifts traffic,domain1 deployment
+CloudFormation change set vs. drift detection,"Preview a planned update vs. find manual changes",domain1 deployment
+Services removed from DEA-C01 scope in v1.1,"AWS Cloud9, AWS CodeCommit, AWS SCT",exam
+S3 Standard-IA minimums,"30 days, 128 KB billable size",domain2 s3 numbers
+Glacier Instant and Flexible minimum duration,90 days,domain2 s3 numbers
+Glacier Deep Archive minimum duration,180 days,domain2 s3 numbers
+Deep Archive retrieval times,"Standard within 12 hours, Bulk within 48 hours",domain2 s3 numbers
+Glacier Flexible retrieval times,"Expedited 1-5 minutes, Standard 3-5 hours, Bulk 5-12 hours",domain2 s3 numbers
+Object Lock governance vs. compliance,"Governance can be bypassed with special permission. Compliance cannot, even by root",domain2 s3
+Object Lock prerequisite,S3 Versioning,domain2 s3
+S3 Replication Time Control,99.9% of objects within 15 minutes,domain2 s3 numbers
+Replicate objects that existed before the rule,S3 Batch Replication,domain2 s3
+Expiration in a versioned bucket,"Adds a delete marker. Add a noncurrent-version action to remove old versions",domain2 s3
+Intelligent-Tiering small objects,Objects under 128 KB are not monitored or auto-tiered,domain2 s3 numbers
+DynamoDB per-partition limits,"3,000 read units and 1,000 write units per second",domain2 databases numbers
+DynamoDB maximum item size,400 KB,domain2 databases numbers
+DynamoDB TTL timing,"Typically within a few days; filter expired items in reads",domain2 databases
+GSI vs. LSI,"GSI: new partition key, any time. LSI: same partition key, defined at table creation",domain2 databases
+MemoryDB vs. ElastiCache,"Durable in-memory primary database vs. cache",domain2 databases
+DocumentDB / Keyspaces / Neptune,"MongoDB-compatible / Cassandra-compatible / graph",domain2 databases
+Redshift COPY files that cannot be split,"Similar sizes, 1 MB-1 GB compressed, count a multiple of slices",domain2 redshift numbers
+Where are COPY row errors?,SYS_LOAD_ERROR_DETAIL,domain2 redshift
+Redshift default isolation for new clusters,Snapshot isolation,domain2 redshift
+Redshift error 1023,Serializable isolation conflict; retry or serialize writers with LOCK,domain2 redshift
+Spectrum vs. federated query,"Spectrum reads S3. Federated query reads RDS and Aurora PostgreSQL or MySQL",domain2 redshift
+KEY vs. ALL distribution,"KEY co-locates large tables on a join column. ALL copies small, slow-changing tables to every node",domain2 redshift
+Redshift Serverless default base capacity,128 RPUs,domain2 redshift numbers
+Athena CTAS/INSERT INTO partition limit,100 partitions per query,domain2 athena numbers
+Partition projection,Athena computes partition locations from a template; ignores registered partitions,domain2 catalog
+MSCK REPAIR TABLE limitation,Works only with Hive-style key=value folders and slows with many partitions,domain2 catalog
+EMR and Athena share table definitions,Use the Glue Data Catalog as EMR's Hive metastore,domain2 catalog
+Iceberg OPTIMIZE vs. VACUUM,"OPTIMIZE compacts files. VACUUM expires snapshots and removes orphan files",domain2 iceberg
+S3 Tables,"Iceberg tables in table buckets with automatic compaction, snapshot management, and file cleanup",domain2 iceberg
+Partitioning vs. bucketing,"Low-cardinality filter column vs. high-cardinality single-value lookups",domain2 layout
+HNSW vs. IVF,"HNSW: graph, fast and accurate, more memory. IVF: clusters, faster builds, less memory",domain2 vectors
+Bedrock Knowledge Bases default chunking,"About 300 tokens, keeping sentences whole",domain2 vectors numbers
+DMS Schema Conversion output,Converted schema plus action items for manual conversion,domain2 modeling
+SageMaker Catalog lineage vs. ML Lineage Tracking,"Data pipeline lineage vs. model training lineage",domain2 modeling
+Athena per-query limit vs. workgroup limit,"Per-query cancels the query. Workgroup sends an SNS alert",domain3 athena
+CloudWatch Logs default retention,Never expire,domain3 monitoring numbers
+Subscription filters per log group,5,domain3 monitoring numbers
+Essentials log class limitation,"No metric filters, subscription filters, or Live Tail; class fixed at creation",domain3 monitoring
+One slow Spark task among many fast ones,Data skew. Use AQE skew join or salting,domain3 emr
+Spot belongs on which EMR nodes?,Task nodes,domain3 emr
+IsComplete vs. Completeness,"IsComplete: no missing values. Completeness: threshold such as >= 0.95",domain3 quality
+Stratified sampling,Sample within each group so small groups are represented,domain3 analysis
+SPICE vs. direct query,"Fast in-memory dashboards vs. always-current data",domain3 analysis
+QuickSight name in November 2026,AWS Quick Sight,domain3 analysis
+Who did what to an AWS resource?,CloudTrail management events (90 days in Event history),domain3 audit
+Who read an S3 object?,CloudTrail data events (off by default),domain3 audit
+What was the configuration on a past date?,AWS Config configuration history,domain3 audit
+CloudTrail Lake status,Closed to new customers May 31 2026; existing customers continue,domain4 audit
+Cross-account KMS decrypt needs,Key policy in the owner account plus IAM policy in the caller account,domain4 security
+Can another account use the aws/s3 key?,No. Use a customer managed key,domain4 security
+S3 default encryption since January 2023,SSE-S3 on all new uploads; cannot be disabled,domain4 security
+Encrypt before transit,Client-side encryption such as the S3 encryption client or AWS Encryption SDK,domain4 security
+Require TLS for a bucket,Deny when aws:SecureTransport is false,domain4 security
+Secrets Manager vs. Parameter Store,"Managed rotation vs. low-cost config and SecureString",domain4 security
+Lake Formation filter levels,"Column, row, and cell",domain4 governance
+LF-Tags vs. IAM ABAC,"Tag-based catalog grants vs. principal-tag-matches-resource-tag conditions",domain4 governance
+Macie custom data identifier,A regular expression for your own sensitive formats,domain4 governance
+Keep copies in one Region,SCP with aws:RequestedRegion plus restricted replication and Backup copy destinations,domain4 privacy
+Domain unit,A business-unit grouping in a Unified Studio domain with delegated policies,domain4 unified-studio
+Subscription fulfillment for Glue assets,Granted automatically through Lake Formation when the table is Lake Formation managed,domain4 unified-studio

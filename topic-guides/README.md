@@ -2,29 +2,52 @@
 
 [Home](../README.md) · [Exam map](../EXAM-MAP.md) · [Decision guides](../decision-guides/README.md)
 
-| Topic | What you will learn |
+Every guide follows the same shape: the core idea in plain words, decision tables, a **Numbers and defaults** table with an AWS source on every row (where the topic has numbers), a common mistake, a **Commonly confused** table, exam cues, a worked "Try it" scenario, and the date it was last checked against AWS documentation.
+
+## Domain 1 · Data Ingestion and Transformation (34%)
+
+| Guide | What you will learn |
 |---|---|
-| [Streaming with Kinesis, Firehose, MSK, and Flink](streaming.md) | A stream keeps events moving while producers and consumers run independently. Start by asking whether you need a replayable source, a delivery service, or a processor. |
-| [Data movement and database CDC](data-movement.md) | Start with the shape of what needs to move. Database changes, existing files, and incoming partner uploads require different interfaces. |
-| [AWS Glue jobs, crawlers, and development tools](glue.md) | Glue brings together several tools for preparing data. Follow the input and output to identify which tool you need. |
-| [Amazon EMR and distributed processing](emr.md) | EMR runs big-data frameworks such as Spark. Choose the deployment mode based on the control and infrastructure your team needs. |
-| [Orchestration with EventBridge, Step Functions, and MWAA](orchestration.md) | Orchestration decides what runs next and what happens after failure. Jobs do the processing and events tell the system when work may be needed. |
-| [Amazon S3 lifecycle, replication, and lake storage](s3.md) | S3 stores data objects under keys. Use the key layout to make the stages of the pipeline visible, such as raw/, curated/, and quarantine/. |
-| [File formats, partitions, and compaction](file-layout.md) | The bytes a query has to read depend on the file format, the partition filter, and the size and number of files. |
-| [Glue Data Catalog and schema management](catalog.md) | The catalog tells a query engine where a table lives, which columns it has, and how to interpret its files. |
-| [Athena queries, cost, and workgroups](athena.md) | Athena lets you use SQL over S3 datasets and can query supported external sources through connectors. Query performance depends heavily on how the data is laid out. |
-| [Redshift loads, Spectrum, and streaming ingestion](redshift.md) | Redshift is an analytical warehouse. Decide whether data should live in a warehouse table, remain in S3, or arrive through a live stream. |
-| [Choose a database from the access pattern](databases.md) | Describe the most important read and write before choosing a data store. Include latency, key distribution, and whether queries are known in advance. |
-| [Monitor and troubleshoot data pipelines](monitoring.md) | A healthy pipeline delivers complete data on time. Track freshness, throughput, and failures so a technically successful job cannot hide a missing dataset. |
-| [Data quality, quarantine, and safe recovery](data-quality.md) | A quality gate defines the conditions a dataset must meet before it becomes visible to downstream readers. |
-| [SQL for validation, deduplication, and loading](sql-patterns.md) | Start by stating the grain of the dataset. If one row should represent one event, every join and merge should preserve or intentionally change that grain. |
-| [IAM, KMS, credentials, and network access](security.md) | Follow the identity that actually executes the operation. A successful launch from your console only proves that your identity could start the job. |
-| [Lake Formation, Macie, and CloudTrail](governance.md) | Governance answers who can see the data, what they can see, and how you can review what happened later. |
-| [APIs and deployment fundamentals](pipeline-engineering.md) | Pagination, throttling, distributed processing, and repeatable deployments |
-| [Data modeling and schema evolution](data-modeling.md) | Grain, warehouse facts, DynamoDB keys, migration, and lineage |
-| [Iceberg](iceberg.md) | Snapshots, compaction, partition evolution, and retention |
-| [Vectors and LLMs](vectors-and-llms.md) | Embeddings, index choices, and document processing |
-| [Business catalogs and Unified Studio](catalog-and-unified-studio.md) | Asset discovery, domains, domain units, and projects |
-| [Analysis and data preparation](analysis-and-data-prep.md) | DataBrew, visualizations, SQL, and sampling |
-| [Privacy and audit](privacy-and-audit.md) | Masking, key controls, data residency, and audit evidence |
-| [Lambda for data pipelines](lambda.md) | Stream consumers, queue failures, concurrency, and storage |
+| [Streaming with Kinesis, Firehose, MSK, and Flink](streaming.md) | Shard limits, fan-out, retention and replay, stateful windows |
+| [Data movement and database CDC](data-movement.md) | DMS full load and CDC, DataSync, Transfer Family, AppFlow, manifests |
+| [AWS Glue jobs, crawlers, and development tools](glue.md) | Worker types, Flex, connections, DynamicFrames, bookmarks |
+| [Lambda for data pipelines](lambda.md) | Kinesis and SQS event sources, failure handling, concurrency, storage |
+| [Orchestration with EventBridge, Step Functions, and MWAA](orchestration.md) | Schedules, events, Pipes, retries, alerts, debugging workflows |
+| [Amazon EMR, distributed processing, and skew](emr.md) | Engine choice, node types and Spot, Spark logs, skew fixes |
+| [APIs, SDKs, throttling, and resumable ingestion](apis-and-sdks.md) | Pagination, 429 handling, SDK paginators and retries, data APIs |
+| [Testing, infrastructure as code, and CI/CD](deployment.md) | CloudFormation, CDK, SAM gradual deployments, pipelines |
+| [Programming concepts for data engineers](pipeline-engineering.md) | Languages, batching and pushdown, containers, data structures |
+
+## Domain 2 · Data Store Management (26%)
+
+| Guide | What you will learn |
+|---|---|
+| [Amazon S3 storage classes, lifecycle, retention, and recovery](s3.md) | Storage class minimums, restore tiers, Object Lock, replication and RTC |
+| [Choose a data store from the access pattern](databases.md) | DynamoDB keys and limits, MemoryDB, DocumentDB, Keyspaces, TTL |
+| [Amazon Redshift loads, table design, access paths, and locks](redshift.md) | COPY and MERGE, distribution, Spectrum, materialized views, locks |
+| [File formats, partitions, compaction, and data shape](file-layout.md) | Parquet, partitioning, bucketing, small files, volume, velocity, variety |
+| [Glue Data Catalog, crawlers, and partition sync](catalog.md) | Crawler policies, partition projection, Schema Registry |
+| [Apache Iceberg, open table formats, and Amazon S3 Tables](iceberg.md) | Snapshots, time travel, OPTIMIZE and VACUUM, managed maintenance |
+| [Data modeling, schema evolution, conversion, and lineage](data-modeling.md) | Grain, star schemas, safe schema changes, DMS Schema Conversion, lineage |
+| [Vectors, indexes, and LLMs in data pipelines](vectors-and-llms.md) | Chunking, HNSW vs. IVF, vector stores, validating LLM output |
+
+## Domain 3 · Data Operations and Support (22%)
+
+| Guide | What you will learn |
+|---|---|
+| [Amazon Athena queries, cost control, and federation](athena.md) | Bytes scanned, CTAS limits, workgroup controls, federated queries |
+| [Monitor, log, and troubleshoot data pipelines](monitoring.md) | Freshness alarms, EventBridge alerts, log retention, log analysis tools |
+| [Data quality, quarantine, and safe recovery](data-quality.md) | DQDL rules, quarantine, reconciliation, idempotent reruns |
+| [SQL for validation, deduplication, analysis, and loading](sql-patterns.md) | Windows, pivots, duplicates, views, tested SQL examples |
+| [Data preparation, analysis, visualization, and sampling](analysis-and-data-prep.md) | DataBrew, Unified Studio, QuickSight SPICE, Spark notebooks, sampling |
+
+## Domain 4 · Data Security and Governance (18%)
+
+| Guide | What you will learn |
+|---|---|
+| [IAM, KMS, credentials, and encryption](security.md) | Role trust, least privilege, Secrets Manager, KMS across accounts, S3 encryption |
+| [Networking for data pipelines](networking.md) | Security groups, NAT allowlists, gateway and interface endpoints, shared responsibility |
+| [Lake Formation, access models, sharing, and PII discovery](governance.md) | Data filters, LF-Tags and ABAC, Macie, datashares, governance patterns |
+| [Masking, encryption in transit, residency, and audit evidence](privacy-and-audit.md) | Masking and tokenization, Region controls, CloudTrail and Config evidence |
+| [Technical catalogs, business catalogs, and SageMaker Unified Studio](catalog-and-unified-studio.md) | Domains, domain units, projects, subscriptions and fulfillment |
+| [Recognition-level services](service-recognition.md) | Amazon Q, Kendra, Data Exchange, Direct Connect, and 2026 name changes |

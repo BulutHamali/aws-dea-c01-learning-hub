@@ -46,6 +46,10 @@ Use `/tmp` for scratch data such as a decompressed working file. Use Amazon Elas
 
 When an SQS invocation fails, messages can become visible again after the visibility timeout. Enable `ReportBatchItemFailures` to report only failed messages. For a FIFO queue, stop after the first failure and return failed and unprocessed items to preserve ordering. Configure the queue’s redrive policy to send persistently failing messages to a dead-letter queue. Use a stable record key at the sink to handle duplicate delivery.
 
+## Common mistake
+
+Turning on provisioned concurrency to protect a database from too many connections. Provisioned concurrency makes more environments ready, which can push even more load downstream. Reserved concurrency, an SQS maximum concurrency setting, or RDS Proxy limits the load.
+
 ## Commonly confused
 
 | Choices | Deciding requirement |
@@ -72,3 +76,5 @@ Use bounded retry and an on-failure destination on the Kinesis event source mapp
 - [Lambda concurrency](https://docs.aws.amazon.com/lambda/latest/dg/lambda-concurrency.html)
 - [SQS error handling and partial batch responses](https://docs.aws.amazon.com/lambda/latest/dg/services-sqs-errorhandling.html)
 - [Lambda file system access](https://docs.aws.amazon.com/lambda/latest/dg/configuration-filesystem.html)
+
+*Last verified against AWS documentation: November 2026.*

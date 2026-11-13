@@ -1,0 +1,40 @@
+name: Repository quality
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Check links, anchors, coverage, guide structure, and style
+        run: python3 scripts/check_repository.py
+      - name: Check practice pages are generated and pass quality rules
+        run: python3 scripts/build_practice.py --check
+      - name: Test the checks with broken fixtures
+        run: python3 -m unittest discover -s scripts -p 'test_*.py'
+      - name: Lint lab CloudFormation templates
+        run: |
+          pip install --quiet cfn-lint
+          cfn-lint labs/hands-on/*/template.yaml
+
+  external-links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check external links
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --no-progress --max-concurrency 4 --accept 200,206,429 "**/*.md"
+          fail: true

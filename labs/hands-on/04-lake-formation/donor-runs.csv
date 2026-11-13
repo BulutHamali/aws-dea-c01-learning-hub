@@ -1,0 +1,5 @@
+site,run_id,donor_name,donor_phone,reads
+cincinnati,R01,Ada Example,555-0101,200
+cincinnati,R02,Ben Example,555-0102,150
+vienna,R03,Cleo Example,555-0103,500
+vienna,R04,Dan Example,555-0104,310

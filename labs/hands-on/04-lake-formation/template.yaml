@@ -1,0 +1,162 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  DEA-C01 hands-on lab 4. A donor dataset in S3 with a Glue table, two analyst roles,
+  and an Athena workgroup. Lake Formation permissions are granted by hand in the lab.
+
+Parameters:
+  Prefix:
+    Type: String
+    Default: dea-lab4
+    AllowedPattern: "[a-z0-9-]{3,20}"
+  ContractorRawAccess:
+    Type: String
+    AllowedValues: ["true", "false"]
+    Default: "true"
+    Description: true gives the contractor role direct s3:GetObject on the data (the bypass).
+
+Conditions:
+  GiveRawAccess: !Equals [!Ref ContractorRawAccess, "true"]
+
+Resources:
+  DataBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${Prefix}-data-${AWS::AccountId}-${AWS::Region}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  ResultsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${Prefix}-athena-${AWS::AccountId}-${AWS::Region}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  Database:
+    Type: AWS::Glue::Database
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput:
+        Name: !Sub "${Prefix}_db"
+
+  DonorRunsTable:
+    Type: AWS::Glue::Table
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseName: !Ref Database
+      TableInput:
+        Name: donor_runs
+        TableType: EXTERNAL_TABLE
+        Parameters:
+          classification: csv
+          skip.header.line.count: "1"
+        StorageDescriptor:
+          Location: !Sub "s3://${DataBucket}/donors/"
+          InputFormat: org.apache.hadoop.mapred.TextInputFormat
+          OutputFormat: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+          SerdeInfo:
+            SerializationLibrary: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Parameters:
+              field.delim: ","
+          Columns:
+            - {Name: site, Type: string}
+            - {Name: run_id, Type: string}
+            - {Name: donor_name, Type: string}
+            - {Name: donor_phone, Type: string}
+            - {Name: reads, Type: bigint}
+
+  WorkGroup:
+    Type: AWS::Athena::WorkGroup
+    Properties:
+      Name: !Sub "${Prefix}-wg"
+      RecursiveDeleteOption: true
+      WorkGroupConfiguration:
+        EnforceWorkGroupConfiguration: true
+        ResultConfiguration:
+          OutputLocation: !Sub "s3://${ResultsBucket}/results/"
+
+  AnalystBasePolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - athena:StartQueryExecution
+              - athena:GetQueryExecution
+              - athena:GetQueryResults
+              - athena:GetWorkGroup
+            Resource: !Sub "arn:aws:athena:${AWS::Region}:${AWS::AccountId}:workgroup/${WorkGroup}"
+          - Effect: Allow
+            Action:
+              - glue:GetDatabase
+              - glue:GetTable
+              - glue:GetPartitions
+            Resource: "*"
+          - Effect: Allow
+            Action: lakeformation:GetDataAccess
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+              - s3:GetBucketLocation
+              - s3:ListBucket
+            Resource:
+              - !GetAtt ResultsBucket.Arn
+              - !Sub "${ResultsBucket.Arn}/*"
+
+  FullAnalystRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${Prefix}-full-analyst"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Ref AnalystBasePolicy
+
+  ContractorRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${Prefix}-contractor"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Ref AnalystBasePolicy
+      Policies: !If
+        - GiveRawAccess
+        - - PolicyName: raw-bucket-read
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action: s3:GetObject
+                  Resource: !Sub "${DataBucket.Arn}/*"
+        - !Ref AWS::NoValue
+
+Outputs:
+  DataBucketName:
+    Value: !Ref DataBucket
+  ResultsBucketName:
+    Value: !Ref ResultsBucket
+  FullAnalystRoleArn:
+    Value: !GetAtt FullAnalystRole.Arn
+  ContractorRoleArn:
+    Value: !GetAtt ContractorRole.Arn

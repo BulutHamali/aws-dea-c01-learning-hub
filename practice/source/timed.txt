@@ -1,0 +1,384 @@
+# Timed set source. Format: "=== ID", then fields. Options use "text || rationale".
+
+=== T01
+set: timed
+primary: 1.1.11
+secondary: 1.1.10
+answer: C
+stem: A sequencing facility streams instrument events into AWS. An alerting application and a billing application read the same events independently. After a 30-hour outage, the alerting application must reprocess everything it missed. The team wants the least custom code. Which ingestion design meets these requirements?
+A: Amazon Data Firehose delivering to S3, with both applications reading the new S3 objects || Firehose keeps no consumer positions. Each application would need its own code to track which objects it has read.
+B: One SQS standard queue that both applications poll, with long polling turned on || Consumers of one queue compete for messages, and a deleted message cannot be read again.
+C: Kinesis Data Streams with retention above 30 hours and one consumer per application || Each consumer keeps its own position, and retention longer than the outage allows replay.
+D: Kinesis Data Streams with default retention and enhanced fan-out for both applications || Enhanced fan-out adds read bandwidth, but the 24-hour default retention expires part of the 30-hour gap.
+explain: Replay and independent readers point to Kinesis Data Streams. The deciding detail is the 30-hour outage, which is longer than the 24-hour default retention.
+
+=== T02
+set: timed
+primary: 4.3.3
+secondary: 4.3.2
+answer: A
+stem: An analytics account runs a Glue job that reads objects from a bucket in the sequencing account. The bucket policy allows the job's role s3:GetObject. Reads fail with a KMS AccessDenied error. The objects use a customer managed key in the sequencing account. What should the team do?
+A: Allow the role in the key policy and grant kms:Decrypt on the key in its IAM policy || Cross-account key use needs both: the key policy in the owner account and an IAM policy in the caller's account.
+B: Add kms:Decrypt on that key ARN to the job role's IAM policy in the analytics account || Necessary but not enough. The key policy in the sequencing account must also allow the external role.
+C: Add a statement to the bucket policy that allows kms:Decrypt for the job's role || A bucket policy governs S3 actions. KMS permissions come from the key policy and IAM policies.
+D: Re-encrypt the objects with the AWS managed aws/s3 key so the account default applies || You cannot edit an AWS managed key's policy, so another account can never decrypt with it.
+explain: The role can reach the object but cannot decrypt it. For a customer managed key in another account, both the key policy and the caller's IAM policy must allow the action.
+
+=== T03
+set: timed
+primary: 3.2.6
+answer: D
+stem: A report must show every daily reading per sensor along with the average of that day and the six previous days. Each sensor has exactly one row per day with no gaps. Which SQL approach produces the report?
+A: GROUP BY sensor_id and day, then compute AVG(reading) across the seven most recent days || Grouping collapses rows. It returns aggregates instead of each detail row with its own moving average.
+B: Compute AVG(reading) OVER (PARTITION BY sensor_id) with no ORDER BY and no window frame || Without ordering and a frame, every row gets the sensor's overall average, not a seven-day average.
+C: Number rows with ROW_NUMBER per sensor_id and keep rows where the number is seven or less || This keeps only seven rows per sensor and calculates no average at all.
+D: AVG(reading) OVER (PARTITION BY sensor_id ORDER BY day ROWS 6 PRECEDING) || A window function keeps every row. With one row per day and no gaps, six preceding rows plus the current row equal seven days.
+explain: Keeping detail rows while adding a calculation over neighbouring rows is exactly what a window function does.
+
+=== T04
+set: timed
+primary: 1.2.2
+secondary: 4.1.1, 2.2.5
+answer: B
+stem: A Glue job uses a JDBC connection to read from an RDS PostgreSQL instance in a private subnet. The connection test fails with a timeout. The credentials in Secrets Manager were verified by logging in from a bastion host. What should the engineer check first?
+A: The Secrets Manager rotation schedule and the database user's password expiry date || The credentials already work. A credential problem returns an authentication error quickly, not a timeout.
+B: The security groups, including Glue's self-referencing rule and inbound port 5432 || A timeout means packets are not arriving. Glue also needs a self-referencing rule for its workers.
+C: The Lake Formation permissions on the catalog table that describes the source database || Lake Formation controls access to catalog data, not network reachability to the database.
+D: The job's worker type, because small workers time out when opening JDBC connections || Worker size affects throughput, not whether the network allows a connection.
+explain: Separate network problems from permission problems. Timeouts point to security groups, routes, and DNS.
+
+=== T05
+set: timed
+primary: 2.3.5
+secondary: 2.3.4, 2.3.6
+answer: B, D
+stem: Regulators require that raw instrument files cannot be deleted or overwritten by anyone, including administrators, for seven years. Accidental overwrites must also be recoverable during that time.
+A: Add a lifecycle rule that expires objects only after seven years || A lifecycle rule schedules deletion. It does not stop anyone from deleting objects earlier.
+B: Enable S3 Versioning on the bucket || Object Lock requires versioning, and versions keep earlier copies after an overwrite.
+C: Enable Object Lock in governance mode with seven-year retention || Users with the bypass permission can still delete objects in governance mode.
+D: Enable Object Lock in compliance mode with seven-year retention || In compliance mode nobody, including the root user, can delete a locked version before the date.
+E: Replicate the bucket to another Region with Replication Time Control || A replica is a second copy, but nothing stops deletion of either copy.
+explain: "Nobody, including administrators" is the signal for compliance mode, and Object Lock always requires versioning.
+
+=== T06
+set: timed
+primary: 1.4.2
+secondary: 1.1.9
+answer: A
+stem: A Lambda function writes validated records to an Aurora PostgreSQL database. During daily spikes, thousands of concurrent invocations use up the database connections, and other applications fail. The function's own latency is acceptable. What is the most direct fix?
+A: Configure reserved concurrency on the function to cap simultaneous invocations || Reserved concurrency sets a ceiling on concurrent executions, which bounds the number of database connections.
+B: Configure provisioned concurrency on the function to pre-initialize environments || Provisioned concurrency reduces cold starts. It does not cap how many invocations run at once.
+C: Increase the function's memory so each invocation finishes and disconnects sooner || Shorter runs may help a little, but a spike can still open thousands of connections at the same time.
+D: Raise the function timeout so invocations can wait longer for a free connection || Waiting invocations hold resources longer and make the connection shortage worse.
+explain: Protecting a downstream system is what reserved concurrency is for. Amazon RDS Proxy is another valid fix, but it is not offered here.
+
+=== T07
+set: timed
+primary: 2.2.4
+secondary: 2.2.3
+answer: C
+stem: An Athena-only table receives a new folder every day at s3://lab-lake/curated/runs/run_date=YYYY-MM-DD/. An hourly crawler costs money and once changed column types unexpectedly. New dates must be queryable as soon as files land, with the least maintenance. What should the team do?
+A: Run MSCK REPAIR TABLE from a scheduled Lambda function after each daily load || This works, but it adds a scheduled component, and repair slows down as partitions accumulate.
+B: Keep the crawler but change its schema change policy to log instead of update || This stops unwanted type changes, but the crawler still costs money and lags behind new arrivals.
+C: Enable partition projection with a date range and a storage location template || Athena calculates partition locations from the template, so new dates are visible with no registration step.
+D: Create a Glue partition index on run_date and remove the crawler schedule || Partition indexes speed up lookups of registered partitions. They do not register new ones.
+explain: A predictable path read only by Athena is the textbook case for partition projection.
+
+=== T08
+set: timed
+primary: 1.3.1
+secondary: 1.3.3
+answer: D
+stem: When a file lands, a pipeline must validate it with Lambda, run a Glue job, wait for the job to finish, and load Redshift. Failed steps need retries with backoff and a failure path that notifies operators. The team wants serverless components and has no Airflow experience. Which service should coordinate the steps?
+A: Amazon MWAA with a DAG that uses an S3 sensor on the landing prefix || MWAA can do this, but it needs Airflow skills and an always-running environment.
+B: EventBridge rules with one target per step, chained by job state change events || Chained rules have no central retry and catch logic and no single execution history.
+C: Glue workflows with triggers for the Lambda validation and the Redshift load || Glue workflows coordinate Glue jobs and crawlers. They cannot run Lambda or Redshift steps directly.
+D: Step Functions with service integrations, Retry and Catch fields, and an SNS step || Step Functions waits for the Glue job, retries with backoff, and routes failures to a notification step.
+explain: Mixed services, waits, retries, and a failure branch, with no Airflow, point to Step Functions.
+
+=== T09
+set: timed
+primary: 3.4.1
+secondary: 3.4.2
+answer: B
+stem: A Glue ETL job loads supplier files into a curated table. Rows with an empty run_id or negative read counts must stay out of the curated table and be kept for repair. The team wants declarative rules evaluated inside the existing job. What should the engineer add?
+A: A DataBrew profile job that runs after the Glue job finishes writing the table || The profile runs after publication, so bad rows are already visible to readers.
+B: Glue Data Quality DQDL rules in the job, routing failing rows to quarantine || Rules run during processing, and failing rows can be written to a quarantine location.
+C: A crawler with a schema change policy that rejects rows that fail the type checks || Crawlers infer metadata. They never filter or reject rows.
+D: An Athena view on the curated table that filters out rows with invalid values || A view hides bad rows from its readers, but the rows stay in the table and are not quarantined.
+explain: "During processing" and "declarative rules" point to Glue Data Quality in the job.
+
+=== T10
+set: timed
+primary: 1.1.4
+secondary: 1.1.9
+answer: A, C
+stem: A pipeline reads a partner API that allows 40 requests per second and returns HTTP 429 with a Retry-After header. Last night the job crashed after writing page 120 to S3 but before saving its next-page token.
+A: Honor Retry-After and retry with capped exponential backoff and jitter || This respects the provider's signal and spreads retries out.
+B: Retry each 429 at once so the batch finishes inside its time window || Immediate retries add load and make throttling worse.
+C: Write each page to a deterministic S3 key and save the token afterward || A rerun overwrites the same object instead of creating a duplicate.
+D: Save the next-page token first, then write the page to S3 || If the job crashes between the two steps, that page is lost.
+E: Raise the Lambda timeout so one invocation can read every page || A longer run does not prevent crashes or throttling, and Lambda stops at 15 minutes.
+explain: Safe API ingestion needs two things: polite retries and a write-then-checkpoint order with idempotent output.
+
+=== T11
+set: timed
+primary: 4.2.4
+secondary: 4.2.5
+answer: C
+stem: Analysts query a curated sequencing table in Athena. One group may see every column. A contractor group may see only rows for its own site, with no donor identifier columns. Both groups currently have s3:GetObject on the curated bucket. What should the team do?
+A: Create two Athena views and grant each group access to its own view through IAM || IAM does not grant access to views, and direct S3 access would bypass the views anyway.
+B: Encrypt the identifier columns with a separate KMS key that contractors cannot use || This does not restrict rows, and Athena does not enforce column access through separate keys.
+C: A Lake Formation cell-level data filter, and removal of contractors' S3 access || Cell-level filters restrict rows and columns together. Removing S3 access closes the bypass.
+D: Tag sensitive S3 objects and deny contractors s3:GetObject on objects with that tag || Object tags apply to whole files, not to rows or columns inside them.
+explain: Row plus column restriction is a cell-level filter. Always close direct S3 access, or users can skip Lake Formation.
+
+=== T12
+set: timed
+primary: 2.1.7
+secondary: 2.4.2
+answer: A
+stem: A lake table in S3 receives daily corrections to existing rows by sample ID. Auditors must be able to query the table as it looked on any day in the last 90 days. Queries are slowing down because of thousands of small files. Which approach meets all requirements?
+A: An Iceberg table with MERGE corrections, 90-day snapshot retention, and compaction || Iceberg supports row-level changes, time travel within retained snapshots, and compaction.
+B: Parquet partitions rewritten each day, with S3 Versioning keeping earlier copies || Versions exist per object, so rebuilding a past table state is manual and not queryable in SQL.
+C: A Hive-style Parquet table with a nightly crawler that records each schema version || A crawler tracks schema versions, not the data as it was on a given day.
+D: An Iceberg table with MERGE for corrections and two-day snapshot retention for VACUUM || VACUUM would expire the snapshots auditors need for 90-day time travel.
+explain: Corrections, time travel, and compaction together point to Iceberg. Retention must cover the audit window.
+
+=== T13
+set: timed
+primary: 3.3.4
+secondary: 3.2.5
+answer: D
+stem: Dashboard queries on a provisioned Redshift cluster slow down every morning when nightly ETL jobs run late. SYS_QUERY_HISTORY shows the dashboard queries spend most of their time queued, not executing. What should the team do first?
+A: Resize the cluster to more nodes so each dashboard query executes faster || Execution is not the bottleneck. The queries are waiting in a queue.
+B: Add sort keys to the dashboard tables to reduce the blocks each query scans || This speeds execution, but the queries are waiting, not scanning.
+C: Change the dashboard tables to DISTSTYLE ALL so joins avoid redistribution || Another execution tuning step. It does not reduce queue time.
+D: Separate ETL and dashboards into WLM queues and turn on concurrency scaling || Separate queues stop ETL from blocking dashboards, and concurrency scaling adds capacity for bursts.
+explain: Read the diagnostic carefully. Queue time calls for workload management, not faster execution.
+
+=== T14
+set: timed
+primary: 3.4.5
+secondary: 3.3.6
+answer: B
+stem: An EMR Spark job joins a 2 TB reads table to a 4 TB samples table on sample_id. One task in the join stage runs for 100 minutes while the other 399 tasks finish within 3 minutes. Both tables are large. What should the engineer do?
+A: Broadcast the samples table to every executor so the join avoids a shuffle || Broadcasting suits a small table. A 4 TB table cannot be copied to every executor.
+B: Enable adaptive query execution skew joins or salt the hot sample_id values || Both split the oversized partition so its rows are processed by several tasks.
+C: Double the number of core nodes so the shuffle spreads across more executors || The hot key still lands in one partition, so the slow task stays slow.
+D: Repartition both tables on a random column before running the join || The join still shuffles by sample_id afterward, so the hot key ends up together again.
+explain: One straggler among many fast tasks is skew. Fix the distribution of keys, not the cluster size.
+
+=== T15
+set: timed
+primary: 1.2.4
+secondary: 1.2.5
+answer: C
+stem: A nightly Glue Spark job converts the day's CSV files to Parquet. Results are needed by 7 AM, and the job usually finishes by 2 AM. Finance wants to lower the job's cost without rewriting it. What should the engineer do?
+A: Move the job to EMR on EC2 with a cluster of On-Demand core nodes || That means rewriting and operating a cluster, and On-Demand nodes are not a discount.
+B: Switch to G.2X workers so the job completes in fewer total billed minutes || Larger workers cost more per minute. The total may not drop.
+C: Run the job with the Flex execution class instead of the Standard class || Flex lowers the price for jobs that can tolerate variable start and finish times.
+D: Convert it to a Glue streaming job with a 100-second micro-batch window || A streaming job runs continuously, which costs more than a nightly batch.
+explain: Five hours of slack before the deadline is the signal for Flex.
+
+=== T16
+set: timed
+primary: 2.3.1
+answer: A
+stem: A nightly COPY from S3 into a Redshift staging table fails with "Load into table failed. Check system table for details." The engineer needs the file name, line number, column, and reason for each rejected row. Where should the engineer look?
+A: SYS_LOAD_ERROR_DETAIL, filtered to the failed COPY query || This view records the file, line, column, and error reason for load failures.
+B: SYS_QUERY_HISTORY, filtered to the failed COPY query || It shows the query's status and timing, not row-level parse errors.
+C: CloudTrail data events for the S3 objects that the COPY read || These record that objects were read, not why rows failed to parse.
+D: STV_LOCKS, filtered to the staging table the COPY targeted || It shows table locks, which are unrelated to rejected rows.
+explain: Row-level COPY errors live in SYS_LOAD_ERROR_DETAIL.
+
+=== T17
+set: timed
+primary: 4.5.3
+secondary: 4.5.5
+answer: B, D
+stem: Compliance requires that donor data and every copy of it, including backups and replicas, stay in eu-central-1. Teams create resources in several accounts under AWS Organizations.
+A: Turn on default SSE-KMS encryption for every bucket in every account || Encryption protects data but does not control where copies are stored.
+B: An SCP that denies actions outside eu-central-1 with aws:RequestedRegion || This stops people from creating resources or calling APIs in other Regions.
+C: Macie automated discovery on all buckets to find donor data elsewhere || Macie detects sensitive data after the fact. It does not prevent copies.
+D: AWS Backup copy rules and S3 replication rules limited to eu-central-1 || Services copy data on your behalf, so their destinations must also stay in the Region.
+E: CloudTrail data events on all buckets to record cross-Region copies || CloudTrail records activity. It does not block anything.
+explain: Prevention needs both a guardrail on API calls and correct destinations for services that copy data.
+
+=== T18
+set: timed
+primary: 1.1.7
+answer: C
+stem: A Lambda function consumes a Kinesis stream through an event source mapping. One malformed record makes the function fail, and the shard stops progressing while Lambda retries. Valid records behind it are delayed for hours. What should the engineer configure?
+A: A larger batch size so the malformed record is processed with more valid records || The whole batch still fails and retries, so the shard stays blocked.
+B: A 7-day stream retention period so no records expire while retries continue || This prevents data loss but does nothing about the blocked shard.
+C: Bisect batch on function error, a maximum retry count, and an on-failure destination || These isolate the bad record, stop endless retries, and send it aside so the shard moves on.
+D: Enhanced fan-out on the stream for the function's event source mapping || Enhanced fan-out adds read bandwidth. It does not change error handling.
+explain: Poison records in stream processing call for bounded retries and failure isolation.
+
+=== T19
+set: timed
+primary: 2.1.2
+secondary: 2.4.1
+answer: D
+stem: An API must return the 20 most recent status updates for one sample in a single request, at any scale, with single-digit millisecond latency. Updates arrive continuously for millions of samples. How should the DynamoDB table be designed?
+A: Partition key status_date and sort key sample_id, queried by today's date || Every write for a day hits one partition key, and one sample's history spans many keys.
+B: Partition key status_id as a random UUID, with a Scan filtered on sample_id || A Scan reads the whole table, which is slow and expensive at scale.
+C: Partition key sample_id with no sort key, plus a GSI on the update timestamp || Without a sort key, the table holds one item per sample, so history cannot be stored.
+D: Partition key sample_id, sort key update time, Query with ScanIndexForward false || One Query reads a sample's updates in time order, newest first, with a limit of 20.
+explain: Design DynamoDB keys from the request: the partition key groups one sample, and the sort key orders its updates.
+
+=== T20
+set: timed
+primary: 3.1.7
+secondary: 3.2.3
+answer: A
+stem: An analyst's ad hoc Athena query against raw logs scanned 40 TB and cost more than the team's monthly budget. The team wants to stop any single query from scanning more than 1 TB while still allowing many smaller queries. What should the engineer configure?
+A: A per-query data usage control of 1 TB on the analysts' Athena workgroup || Athena cancels any query in the workgroup that exceeds the per-query limit.
+B: A workgroup-wide data usage alert of 1 TB that notifies through Amazon SNS || Workgroup-wide controls send alerts. They do not cancel a running query.
+C: An AWS Budgets alert on Athena spend that emails the analyst team || A budget alert arrives after the money is spent.
+D: An IAM condition that limits athena:StartQueryExecution to 1 TB per query || IAM has no condition key for bytes scanned.
+explain: Only the per-query data usage control stops a runaway query.
+
+=== T21
+set: timed
+primary: 1.3.4
+secondary: 3.3.2
+answer: B
+stem: Operators must be emailed whenever any Glue job in the account ends in FAILED or TIMEOUT. The solution must cover new jobs automatically and need no code. What should the engineer configure?
+A: A CloudWatch alarm on each job's failed-task metric with an SNS email action || Alarms are per job, so new jobs are not covered automatically.
+B: An EventBridge rule for Glue Job State Change events in those states, targeting SNS || One rule matches every job's state events, including jobs created later, with no code.
+C: A scheduled Lambda function that calls GetJobRuns and emails any failures || This requires code and adds a polling delay.
+D: A CloudWatch Logs metric filter on each job's error log group with an SNS alarm || This is per log group and may miss timeouts that log no error line.
+explain: Glue publishes job state change events to EventBridge. One rule plus SNS covers every job.
+
+=== T22
+set: timed
+primary: 4.3.1
+answer: D
+stem: Customer support analysts query donor contact data in Redshift. They must see only the last four digits of phone numbers. Auditors who use the same tables must see full values. The stored data must not change. What should the team use?
+A: A Glue job that writes a redacted copy of the table for the support analysts || This duplicates data and needs ongoing maintenance, and the requirement says not to change data.
+B: A column-level REVOKE that removes the phone column from the support role || This hides the whole column instead of showing the last four digits.
+C: SSE-KMS with separate keys for the support role and for the auditor role || Encryption at rest does not change what each reader sees in query results.
+D: Redshift dynamic data masking policies attached to the support and auditor roles || Masking changes query results per role without changing stored data.
+explain: Partial values per role at query time is dynamic data masking.
+
+=== T23
+set: timed
+primary: 2.4.5
+secondary: 1.2.6
+answer: A, D
+stem: Athena queries usually filter one collection day and select three of 40 columns from a large CSV dataset in S3. The team can redesign the storage layout.
+A: Partition the data by collection day, the column used in filters || Queries skip every folder except the requested day.
+B: Partition the data by sample_id so each sample has its own folder || High cardinality creates millions of tiny files and slow planning.
+C: Compress the CSV files with gzip and keep the current folder layout || Every column is still read, and gzip files cannot be split.
+D: Store the data as Parquet so queries read only selected columns || Columnar files let Athena skip 37 of the 40 columns.
+E: Turn on S3 Transfer Acceleration for the bucket holding the data || This speeds long-distance transfers into S3, not query scans.
+explain: Partition pruning skips files and column pruning skips columns. Together they cut bytes scanned the most.
+
+=== T24
+set: timed
+primary: 1.1.1
+answer: B
+stem: An application team runs Kafka producers and Kafka Connect connectors on premises. It wants to move streaming to AWS with no producer code changes and keep Kafka consumer group behavior. Which service should it use?
+A: Kinesis Data Streams, replacing producers with the Kinesis Producer Library || This requires rewriting producers for a different API.
+B: Amazon MSK, keeping the existing Kafka clients and Kafka Connect connectors || MSK is managed Apache Kafka, so clients, connectors, and consumer groups keep working.
+C: Amazon Data Firehose with a Direct PUT delivery stream for each producer || Firehose is a delivery service with its own API, not a Kafka endpoint.
+D: Amazon SQS FIFO queues, with one queue for each existing Kafka topic || SQS has a different API and no consumer group offsets.
+explain: Existing Kafka code is the deciding requirement.
+
+=== T25
+set: timed
+primary: 2.3.2
+secondary: 2.3.3, 2.3.5
+answer: C
+stem: Sequencing run reports are read often for 60 days, rarely for the next 2 years, and then kept 10 more years for audits that allow a 48-hour retrieval. Objects average 4 MB. Which lifecycle plan costs the least while meeting the access needs?
+A: Standard, then Intelligent-Tiering at 60 days, then Glacier Instant Retrieval at 2 years || Glacier Instant Retrieval costs more to store than needed for a 48-hour audit window.
+B: Standard, then One Zone-IA at 60 days, then Glacier Flexible Retrieval at 2 years || One Zone-IA risks loss of the only copy, and Flexible Retrieval costs more than Deep Archive.
+C: Standard, then Standard-IA at 60 days, then Glacier Deep Archive at 2 years || Standard-IA fits rare reads with fast access, and Deep Archive bulk restores fit 48 hours.
+D: Standard, then Glacier Instant Retrieval at 60 days, then expiration at 2 years || Expiring after 2 years deletes reports that must be kept for audits.
+explain: Match each period to its access need. A 48-hour retrieval window fits Deep Archive.
+
+=== T26
+set: timed
+primary: 4.5.2
+secondary: 4.2.5
+answer: A
+stem: A lab suspects that some curated tables in its S3 lake contain donor names and phone numbers. It must find which data contains them, then ensure only approved roles can query those columns across hundreds of tables. Which approach fits best?
+A: Run Macie discovery on the buckets, then tag affected columns with LF-Tags || Macie finds the sensitive data. LF-Tags apply column permissions at scale across many tables.
+B: Run Glue crawlers with custom classifiers, then deny s3:GetObject on the buckets || Crawlers infer schemas, not PII. A bucket-wide deny blocks every reader.
+C: Run Macie discovery on the buckets, then turn on SSE-KMS for buckets with findings || Encryption does not limit which columns authorized readers can query.
+D: Search tables with Athena regular expressions, then create one view per table || This is manual and error-prone, and views do not stop direct S3 access.
+explain: Discovery and access control are separate steps: Macie finds, Lake Formation restricts.
+
+=== T27
+set: timed
+primary: 3.1.2
+secondary: 3.1.1
+answer: C
+stem: A Step Functions workflow that runs a Glue job and then a Redshift load failed overnight. The operator needs to see which state failed, its input, and the error returned by the Glue service integration. Where should the operator look first?
+A: The Glue job's CloudWatch log group for the most recent job run || Useful later for job details, but it does not show workflow state inputs.
+B: CloudTrail management events for StartJobRun calls in the past day || These show API calls, not each state's input and error.
+C: The failed execution's event history in the Step Functions console || It lists every state, its input and output, and the error and cause returned.
+D: The Redshift SYS_QUERY_HISTORY view, filtered to the load query || The load may never have started if the Glue step failed.
+explain: Start with the orchestrator's execution history, then drill into the failing service.
+
+=== T28
+set: timed
+primary: 1.2.6
+secondary: 2.4.5
+answer: D
+stem: Devices send JSON events through Amazon Data Firehose to S3. Analysts query the data with Athena and complain about cost and speed. The team wants the files stored as Parquet without adding a separate processing job. What should the engineer do?
+A: Add a Lambda transformation to Firehose that rewrites each record as CSV || CSV is not columnar, so queries still read every field.
+B: Run a nightly Glue job that converts the previous day's JSON files to Parquet || This adds the separate job the team wants to avoid.
+C: Turn on GZIP compression for the Firehose delivery stream to S3 || The files get smaller but remain JSON, a row format.
+D: Turn on Firehose record format conversion to Parquet with a Glue table schema || Firehose converts JSON to Parquet in flight using the schema from the catalog.
+explain: Firehose can convert JSON to Parquet or ORC on delivery, with no extra job.
+
+=== T29
+set: timed
+primary: 3.2.5
+secondary: 2.1.1, 4.1.6
+answer: B
+stem: A research group runs heavy Redshift queries for a few hours twice a month and nothing in between. It wants to avoid paying for idle capacity and does not want to manage clusters. What should it use?
+A: A provisioned RA3 cluster with a one-year reserved instance commitment || Reserved nodes are paid for whether or not they are used.
+B: Redshift Serverless with base capacity sized for the heavy workload || Serverless charges for compute while queries run, with no cluster to manage.
+C: A provisioned cluster with concurrency scaling turned on for busy days || The base cluster still runs, and is paid for, between the busy days.
+D: A provisioned cluster that an operator pauses and resumes around each run || Pausing saves money, but it is manual cluster management the group wants to avoid.
+explain: Intermittent use plus no cluster management points to Redshift Serverless.
+
+=== T30
+set: timed
+primary: 1.4.5
+secondary: 1.4.8
+answer: A
+stem: A team builds the same Glue jobs, IAM roles, and S3 buckets by hand in dev, test, and prod accounts. The environments have drifted, and a manual change caused an outage. The team wants repeatable deployments reviewed in pull requests. What should it do?
+A: Define resources in CloudFormation or CDK in Git and deploy them with a pipeline || IaC in version control makes every environment reproducible and every change reviewable.
+B: Export each job's configuration as JSON and import it into the other accounts || This is still a manual copy and does not cover roles and buckets.
+C: Use AWS Config rules to detect differences and correct them by hand each week || Config detects drift but does not deploy anything.
+D: Write a runbook with console screenshots for building each environment || A runbook is still manual and drifts as the console changes.
+explain: Repeatable and reviewable deployments are what infrastructure as code provides.
+
+=== T31
+set: timed
+primary: 2.1.5
+secondary: 2.3.1, 1.2.3
+answer: C
+stem: Analysts use Redshift for warehouse reporting. Five years of raw event history sits in S3 as partitioned Parquet, queried a few times a month and always joined with warehouse dimension tables. The team does not want to load the history into Redshift. What should it use?
+A: Redshift federated query pointed at the S3 bucket that holds the history || Federated query reads RDS and Aurora databases, not files in S3.
+B: Athena over the history, with results exported into Redshift for each report || This adds copies and steps for every report.
+C: Redshift Spectrum external tables over the partitioned Parquet history in S3 || Spectrum queries S3 data from Redshift and joins it with local tables, with no load.
+D: A Redshift materialized view that holds the full five-year history || A materialized view stores data in the cluster, which the team wants to avoid.
+explain: Redshift SQL joining warehouse tables with data left in S3 is Spectrum.
+
+=== T32
+set: timed
+primary: 4.1.1
+secondary: 1.2.2
+answer: D
+stem: A Lambda function in a VPC must query a Redshift cluster in the same VPC. Calls time out. The function's role has the needed permissions, and the cluster accepts connections from a bastion host. The function and cluster use different security groups. What should the engineer change?
+A: Attach the AmazonRedshiftFullAccess managed policy to the function's role || Permissions are already in place, and a timeout is a network symptom.
+B: Add an S3 gateway endpoint to the route tables used by the function's subnets || A gateway endpoint reaches S3 or DynamoDB, not a Redshift cluster.
+C: Add an outbound rule on the cluster's security group allowing all traffic || Security groups are stateful. The cluster needs an inbound rule, not outbound.
+D: Add an inbound rule on the cluster's group for port 5439 from the function's group || This allows the function's traffic to reach the cluster on the Redshift port.
+explain: Referencing the caller's security group in the target's inbound rule is the standard fix.

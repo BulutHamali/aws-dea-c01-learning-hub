@@ -1,0 +1,389 @@
+# Full mock source, part 2 (questions 34 to 65).
+
+=== M34
+set: mock
+primary: 2.1.1
+secondary: 3.2.5
+answer: B
+stem: A lab stores 200 TB of historical reads as Parquet in S3. Analysts run unpredictable ad hoc SQL a few times a week. The team wants the lowest cost with no infrastructure to manage. Which approach fits?
+A: Load the data into a provisioned Redshift cluster sized for the full 200 TB || A permanently running cluster costs far more for occasional queries.
+B: Query the data in place with Athena, using partitions and columnar reads || Athena charges per query for data scanned, with nothing running between queries.
+C: Load the data into Aurora PostgreSQL and index the commonly filtered columns || A row-oriented database is a poor fit for scanning hundreds of terabytes.
+D: Copy the data into DynamoDB and use Scan operations with filter expressions || DynamoDB scans are slow and expensive for analytics.
+explain: Occasional ad hoc SQL over S3 with no infrastructure is Athena.
+
+=== M35
+set: mock
+primary: 3.1.1
+secondary: 1.3.1
+answer: A
+stem: A data team already maintains 150 Apache Airflow DAGs on self-managed EC2 instances. Upgrades and scaling take too much time. They want a managed service without rewriting the DAGs. What should they use?
+A: Amazon MWAA, uploading the existing DAGs to its S3 bucket || MWAA runs Airflow as a managed service, so existing DAGs keep working.
+B: AWS Step Functions, converting each DAG into a state machine definition || Converting 150 DAGs is the rewrite the team wants to avoid.
+C: AWS Glue workflows, re-creating each DAG's tasks as Glue triggers || Glue workflows only coordinate Glue jobs and crawlers.
+D: EventBridge Scheduler with one schedule for each task in each DAG || Schedules have no dependency handling between tasks.
+explain: Existing Airflow code plus managed operations is MWAA.
+
+=== M36
+set: mock
+primary: 4.5.1
+secondary: 4.2.3, 2.1.5
+answer: C
+stem: The finance account needs live, read-only access to selected tables in the sequencing account's Redshift Serverless workgroup. Finance analysts query from their own Redshift Serverless workgroup. Copies of the data are not allowed. What should the sequencing team do?
+A: UNLOAD the tables to S3 every hour and share the bucket with the finance account || UNLOAD creates copies, which are not allowed.
+B: Create database users for finance analysts in the sequencing workgroup || This gives finance direct logins to another account's warehouse, which complicates control.
+C: Create a datashare, add the tables, and grant usage to the finance account || A datashare gives live, read-only access without copying data.
+D: Set up Redshift federated query from the finance workgroup to the sequencing workgroup || Federated query reads RDS and Aurora, not another Redshift workgroup.
+explain: Live cross-account Redshift access without copies is data sharing.
+
+=== M37
+set: mock
+primary: 1.2.5
+secondary: 1.2.4
+answer: B
+stem: A team needs a nightly Spark job that joins 500 GB of S3 data and writes Parquet. It must install a proprietary Java library on every node at startup and use a specific instance family. Which service fits?
+A: AWS Glue Spark ETL with the library passed as an extra JAR file || Glue accepts extra JARs but does not let you install software on nodes or pick instance families.
+B: EMR on EC2 with a bootstrap action and the required instance types || EMR on EC2 gives node-level control, including bootstrap actions and instance types.
+C: AWS Lambda with the library packaged in a container image || Lambda cannot run a 500 GB Spark join within 15 minutes.
+D: Amazon Athena CTAS with the library registered as a user-defined function || Athena UDFs run in Lambda and do not install libraries on nodes.
+explain: Node-level installs and instance choices point to EMR on EC2.
+
+=== M38
+set: mock
+primary: 2.3.3
+secondary: 2.3.4, 2.3.2
+answer: C, E
+stem: A versioned bucket stores raw instrument files. Current versions should be deleted after 400 days. Previous versions created by overwrites should be removed 30 days after they stop being current. Storage keeps growing anyway.
+A: A transition to Glacier Deep Archive at 30 days for all objects || This lowers cost but deletes nothing.
+B: Suspend versioning and rely on a 400-day expiration rule || Existing versions remain, and you lose overwrite protection.
+C: A current-version expiration action at 400 days || In a versioned bucket this adds a delete marker after 400 days.
+D: An S3 Object Lock default retention of 400 days on the bucket || Object Lock prevents deletion, the opposite of what is needed.
+E: A noncurrent-version expiration action at 30 days || This permanently removes older versions 30 days after they become noncurrent.
+explain: In versioned buckets, plan current and noncurrent versions separately.
+
+=== M39
+set: mock
+primary: 3.2.4
+secondary: 3.1.6
+answer: C
+stem: A data scientist wants to explore a cataloged table with PySpark for a few hours, without creating or managing a cluster, and pay only while the session runs. What should she use?
+A: An EMR on EC2 cluster with JupyterHub, terminated after she finishes || She would have to create and manage the cluster.
+B: Athena SQL queries in the query editor with CTAS for intermediate results || This is SQL, not PySpark.
+C: An Athena for Apache Spark notebook in a Spark-enabled workgroup || Sessions start in seconds with no cluster, and billing is for compute used.
+D: A Glue ETL job that runs her script nightly and writes results to S3 || A nightly job is not interactive exploration.
+explain: Interactive serverless PySpark exploration is Athena for Apache Spark.
+
+=== M40
+set: mock
+primary: 4.5.4
+secondary: 3.3.5
+answer: A
+stem: An auditor asks what the curated bucket's encryption and replication settings were on each day of the last quarter, and when they changed. Which service answers this most directly?
+A: AWS Config configuration history for the bucket || Config records configuration items over time, showing each setting and when it changed.
+B: CloudTrail management events for PutBucketEncryption and PutBucketReplication || These show who made changes but not the full configuration on each day.
+C: Amazon Macie findings for the curated bucket over the quarter || Macie reports sensitive data and bucket security posture, not configuration history.
+D: S3 Storage Lens dashboards for the curated bucket and its prefixes || Storage Lens reports usage and activity metrics, not configuration history.
+explain: "What was the configuration on a given day" is AWS Config.
+
+=== M41
+set: mock
+primary: 1.2.7
+secondary: 3.3.6
+answer: D
+stem: A Glue Spark job fails after 40 minutes with "Container killed by YARN for exceeding memory limits" in the stage that reads a few very large gzip CSV files. Other stages are fine. What is the most likely fix?
+A: Rotate the credentials the job uses to read the S3 bucket || Credentials errors fail immediately, not after 40 minutes with memory errors.
+B: Increase the job timeout from 48 hours to the maximum allowed value || The job is failing from memory pressure, not running out of time.
+C: Turn on job bookmarks so the job skips files it has already processed || Bookmarks do not reduce the memory needed for a large unsplittable file.
+D: Split the files or use splittable compression, and use memory-optimized workers || Gzip cannot be split, so one task holds a huge file. Splitting or more memory per worker fixes it.
+explain: Large unsplittable inputs overload single tasks. Make input splittable or give tasks more memory.
+
+=== M42
+set: mock
+primary: 2.4.4
+secondary: 2.2.6
+answer: B
+stem: A dashboard shows wrong totals. Engineers need to see which upstream tables and Glue jobs fed the dashboard's source table and how that path changed last week. The pipeline runs in SageMaker Unified Studio projects. What should they use?
+A: SageMaker ML Lineage Tracking for the training jobs in the project || ML Lineage Tracking covers ML artifacts such as training jobs and models.
+B: SageMaker Catalog lineage, which captures Glue and Redshift lineage automatically || Catalog lineage shows dataset-to-job relationships, with versions over time.
+C: CloudTrail management events filtered to the Glue job names in the project || CloudTrail shows API calls, not dataset lineage.
+D: The Glue Data Catalog table versions for the dashboard's source table || Table versions track schema changes, not upstream datasets and jobs.
+explain: Data pipeline lineage across Glue and Redshift is captured in SageMaker Catalog lineage.
+
+=== M43
+set: mock
+primary: 3.3.6
+secondary: 1.2.7
+answer: A
+stem: An EMR cluster runs nightly Spark steps. After failures, the cluster terminates automatically, and engineers cannot find the executor logs to investigate. What should they configure?
+A: An S3 log location so step and container logs are archived || EMR copies logs to S3, where they remain after the cluster terminates.
+B: Termination protection so the cluster stays up after every failed step || The cluster would keep running and costing money after every failure.
+C: CloudTrail data events on the cluster's S3 output bucket || These record object access, not Spark executor logs.
+D: A larger primary node so it can keep more logs on its local disk || Local disk logs disappear when the cluster terminates.
+explain: Archive EMR logs to S3 so they outlive transient clusters.
+
+=== M44
+set: mock
+primary: 4.5.6
+secondary: 4.1.7
+answer: D
+stem: A clinical project in SageMaker Unified Studio requests access to a published sequencing table. The producer approves the subscription, but clinical users still cannot query the table. The table is registered in the Glue Data Catalog but uses IAM and S3 policies, not Lake Formation. What explains this?
+A: The clinical project's members need IAM Identity Center user accounts first || The users can already sign in. The problem is fulfillment of the grant.
+B: Subscriptions take 24 hours to take effect after a producer approves them || There is no fixed 24-hour delay for subscription grants.
+C: The producer must also publish the table to AWS Data Exchange as a product || Data Exchange is for external data products, not internal subscriptions.
+D: Automatic fulfillment works through Lake Formation, so the table must be managed by it || Without Lake Formation management, access must be granted another way.
+explain: Approval in the catalog and effective data access are separate. Automatic grants for Glue tables use Lake Formation.
+
+=== M45
+set: mock
+primary: 1.2.8
+secondary: 3.1.5
+answer: C
+stem: Partner labs need an HTTPS API to look up the latest status for a sample ID with single-digit millisecond latency. Each partner must be limited to 50 requests per second. What design fits?
+A: An Athena query behind a Lambda function URL for each partner request || Athena query latency is seconds, not milliseconds.
+B: Direct access to an RDS read replica with one database user per partner || Exposing a database to partners is risky and offers no per-partner rate limiting.
+C: API Gateway usage plans and API keys, with Lambda reading DynamoDB || Usage plans throttle each partner, and DynamoDB serves key lookups fast.
+D: A public S3 bucket with one JSON file per sample, refreshed every minute || Public data violates security, and there is no rate limiting per partner.
+explain: Data APIs with per-client limits fit API Gateway usage plans in front of a key-value store.
+
+=== M46
+set: mock
+primary: 2.4.6
+secondary: 2.1.8, 1.2.10
+answer: B
+stem: A lab wants researchers to ask questions in natural language over 20,000 PDF protocols in S3 and get answers with citations. The team does not want to build its own chunking and embedding pipeline. What should it use?
+A: Amazon Kendra with an S3 connector, plus a Lambda function to generate embeddings || Kendra searches documents, but building embeddings yourself is the work they want to avoid.
+B: Amazon Bedrock Knowledge Bases with the S3 bucket as a data source || Knowledge Bases chunk, embed, store, and retrieve automatically, with citations.
+C: Athena full-text queries over the PDF files using regular expressions || Athena cannot read PDF text directly and does not answer questions.
+D: A Glue job that converts each PDF to Parquet for analysts to query with SQL || Tables of text do not give natural-language answers.
+explain: Managed chunking, embedding, and retrieval over S3 documents is Bedrock Knowledge Bases.
+
+=== M47
+set: mock
+primary: 3.2.3
+secondary: 3.2.6
+answer: D
+stem: Analysts in Athena repeat the same 40-line query that joins runs to instruments and filters out test runs. Results must always reflect the latest data, and the team wants one shared definition. What should the engineer create?
+A: A CTAS table refreshed by hand whenever the analysts ask for it || A CTAS table is a copy and goes stale between refreshes.
+B: A saved query in each analyst's own Athena console history || Each person keeps a copy that can drift from the others.
+C: A Glue job that writes the query result to S3 every hour || Results are up to an hour old, not always current.
+D: An Athena view with the join and filter as its definition || A view stores the query once and runs against current data every time.
+explain: A shared definition that is always current is a view.
+
+=== M48
+set: mock
+primary: 4.5.7
+secondary: 4.5.1
+answer: A
+stem: A company wants each business domain to own and publish its data products, while a central team sets shared rules for metadata, access, and auditing. Consumers in any domain should discover and request data in one place. Which pattern describes this?
+A: Federated governance, with domain ownership and a central catalog and policies || Domains own data, while a central catalog and rules keep discovery and control consistent.
+B: Fully centralized governance, where one team owns and publishes every dataset || The requirement is for domains to own and publish their data.
+C: Fully decentralized governance, with each domain choosing its own tools and rules || Without shared rules, discovery and auditing break down.
+D: Copy-based sharing, where each consumer receives a nightly export of the data || This duplicates data and governance work and does not define ownership.
+explain: Domain ownership with central standards is federated governance, often called a data mesh with a central catalog.
+
+=== M49
+set: mock
+primary: 1.2.10
+secondary: 1.2.9
+answer: B
+stem: Technicians write free-text notes such as "rerun lane 3, low yield ~40%". A pipeline must extract run ID, lane, and yield into a table. The notes vary too much for regular expressions. What is the most reliable design?
+A: Send notes to an LLM in Bedrock and write whatever it returns into the table || Unvalidated model output can be malformed or wrong.
+B: Ask a Bedrock LLM for JSON, validate the fields, and review failures || Schema and range checks catch bad outputs, and a review queue handles exceptions.
+C: Write more regular expressions until every note in last month's data matches || New phrasing will keep breaking the parser.
+D: Store the raw notes in Redshift and let analysts read them by hand || This does not produce structured fields.
+explain: LLMs suit messy text, but their output must be validated before it is published.
+
+=== M50
+set: mock
+primary: 2.2.2
+secondary: 2.2.1
+answer: C
+stem: A team runs Spark on EMR and also queries the same tables with Athena. Today EMR uses its own Hive metastore on the primary node, and table definitions drift between the two engines. What should the engineer do?
+A: Copy the Hive metastore database to Amazon RDS and point Athena at it || Athena reads from the Glue Data Catalog, not an external Hive metastore on RDS.
+B: Run a crawler every hour so the Glue Data Catalog mirrors the EMR metastore || Two catalogs remain, and they will still drift between crawls.
+C: Configure EMR to use the AWS Glue Data Catalog as its Hive metastore || Both engines then read the same table definitions.
+D: Export table definitions from Athena into EMR after every schema change || Manual syncing invites drift and mistakes.
+explain: One shared catalog removes drift. EMR can use the Glue Data Catalog as its metastore.
+
+=== M51
+set: mock
+primary: 3.4.2
+secondary: 3.4.1
+answer: A, E
+stem: A Glue Data Quality ruleset must fail a run when run_id has any nulls and when the daily row count falls outside the recent normal range. Which TWO DQDL rules express this?
+A: IsComplete "run_id" || The rule passes only when every value in the column is present.
+B: Completeness "run_id" > 0.5 || This allows up to half the values to be missing.
+C: ColumnExists "run_id" || This checks that the column exists, not that values are present.
+D: RowCount > 0 || Any non-empty dataset passes, so it does not catch an unusual volume.
+E: RowCount between min(last(7)) and max(last(7)) || A dynamic rule compares today's count with recent runs.
+explain: Use IsComplete for no nulls and dynamic rules with last() for ranges based on history.
+
+=== M52
+set: mock
+primary: 1.3.2
+secondary: 1.3.4, 3.1.8
+answer: B, D
+stem: A file-processing Lambda function is triggered directly for each upload. During month-end, 50,000 files arrive in an hour, the downstream database is overwhelmed, and some files are never processed.
+A: Raise the Lambda timeout to 15 minutes for each invocation || Longer runs hold connections longer and worsen the overload.
+B: Send upload events to an SQS queue with a dead-letter queue || The queue absorbs the burst, and repeated failures land in the DLQ for review.
+C: Turn on provisioned concurrency for the month-end spike || More ready environments push even more load onto the database.
+D: Set maximum concurrency on the queue's event source mapping || Bounded concurrency protects the database while the queue holds the backlog.
+E: Process all files in one daily Lambda invocation at midnight || One invocation cannot process 50,000 files within 15 minutes.
+explain: Buffer bursts with a queue, bound the consumer, and capture failures in a dead-letter queue.
+
+=== M53
+set: mock
+primary: 2.1.4
+secondary: 1.1.6
+answer: C
+stem: Several hospitals send nightly result files and can only use SFTP. The lab wants the files to land in S3 and start processing automatically, with no servers to manage. What should it set up?
+A: An EC2 instance running an SFTP server with a cron job that copies files to S3 || This works but adds servers to patch and manage.
+B: AWS DataSync agents installed in each hospital's data center || DataSync needs agents and is not an SFTP endpoint for external senders.
+C: AWS Transfer Family SFTP backed by S3, with an S3 event starting processing || Transfer Family is managed SFTP into S3, and the arrival event triggers the pipeline.
+D: Amazon AppFlow flows that connect to each hospital's SFTP client || AppFlow connects SaaS applications, not SFTP clients.
+explain: Partners that can only use SFTP fit AWS Transfer Family in front of S3.
+
+=== M54
+set: mock
+primary: 3.1.4
+secondary: 1.4.10
+answer: B
+stem: A nightly EMR on EC2 job processes 10 TB and takes six hours. It can tolerate losing some compute nodes, but losing HDFS data would restart the job. The team wants to cut cost. What should it change?
+A: Run core nodes on Spot Instances and keep task nodes on On-Demand || Losing Spot core nodes loses HDFS blocks, which the job cannot tolerate.
+B: Core nodes On-Demand, Spot task nodes, and managed scaling || Task nodes hold no HDFS data, so Spot interruptions only slow tasks.
+C: Move the primary node to Spot because it does not process any data || Losing the primary node terminates the whole cluster.
+D: Use a single large On-Demand node to remove the shuffle across nodes || One node cannot process 10 TB in the time window and costs more.
+explain: Spot belongs on task nodes, which store no HDFS data.
+
+=== M55
+set: mock
+primary: 1.3.3
+secondary: 3.1.2
+answer: A
+stem: A Step Functions workflow starts a Glue job with the StartJobRun API and immediately moves on, so the Redshift load sometimes runs before the job finishes. What should the engineer change?
+A: Use the Glue .sync integration so the state waits for the job to finish || The .sync integration pattern waits for the job to finish before moving to the next state.
+B: Add a Wait state of 30 minutes between the Glue step and the Redshift step || A fixed wait is either too short on slow days or wasted time on fast days.
+C: Move the Redshift load into the Glue job script so both run as one step || This couples unrelated steps and removes separate retries.
+D: Trigger the Redshift load from an S3 event on the job's output prefix || The first output file may arrive long before the job finishes.
+explain: Step Functions service integrations can wait for a job to complete with the .sync pattern.
+
+=== M56
+set: mock
+primary: 1.4.1
+secondary: 1.1.9, 3.1.3
+answer: D
+stem: A producer sends 2,000 events per second to Kinesis with one PutRecord call per event, and network overhead makes it fall behind. What change most reduces runtime?
+A: Add a short sleep between calls so the stream is not throttled || Sleeping slows the producer further.
+B: Increase the record size by padding each event to 1 MB || Larger records waste capacity and slow writes.
+C: Switch the stream to on-demand mode to avoid shard limits || The bottleneck is per-call overhead in the producer, not stream capacity.
+D: Batch events with PutRecords and retry only failed entries || Fewer calls cut overhead, and only failed records are retried.
+explain: Batch API calls to reduce per-request overhead.
+
+=== M57
+set: mock
+primary: 1.4.4
+secondary: 1.4.9
+answer: C
+stem: A transformation that converts read counts to percentages broke silently last month, and nobody noticed for a week. The team wants to catch such errors before deployment. What practice addresses this most directly?
+A: Increase the job's log level so more details appear in CloudWatch Logs || Logs help after a failure, not before deployment.
+B: Ask a senior engineer to approve every change in the console || Manual approval without tests misses subtle logic errors.
+C: Add unit tests on small fixed inputs, run in CI on every pull request || Tests with known expected outputs catch logic changes before they ship.
+D: Store the job script in S3 with versioning turned on for the bucket || Versioning helps roll back, but it does not catch errors.
+explain: Unit tests in CI catch logic errors before they reach production.
+
+=== M58
+set: mock
+primary: 1.4.6
+secondary: 1.4.5
+answer: B
+stem: A serverless pipeline has eight Lambda functions, a Step Functions state machine, and two DynamoDB tables. The team wants short templates, local testing of functions, and gradual Lambda deployments that roll back on errors. What should it use?
+A: Hand-written CloudFormation YAML with no transforms for every resource || Works, but the templates are long, and there is no local testing or gradual rollout.
+B: AWS SAM with AutoPublishAlias and a deployment preference with alarms || SAM adds short syntax, local testing, and CodeDeploy traffic shifting with rollback.
+C: Terraform modules applied by hand from a developer's laptop || Manual applies are not repeatable, and there is no built-in gradual Lambda rollout.
+D: The Lambda console, uploading each function's code as a zip file || Manual uploads are neither repeatable nor reviewable.
+explain: SAM is built for serverless applications, including gradual deployments.
+
+=== M59
+set: mock
+primary: 1.4.7
+secondary: 1.4.2
+answer: A
+stem: A Lambda function downloads a 3 GB reference genome index for each invocation and fails because /tmp is too small. Many concurrent invocations need the same read-only index. What is the best fix?
+A: Mount an EFS file system that holds the index, through the function's VPC configuration || All environments share one copy without downloading it each time.
+B: Increase function memory to 10 GB so the index fits in memory || Memory does not increase /tmp, and each invocation still downloads the file.
+C: Store the index in a Lambda environment variable as a base64 string || Environment variables are limited to a few kilobytes.
+D: Split the index into 1,000 parts and download them in parallel to /tmp || The total size is unchanged, /tmp still needs room for it, and every invocation still downloads it.
+explain: Large shared read-only files fit EFS mounted into Lambda.
+
+=== M60
+set: mock
+primary: 1.4.9
+secondary: 1.4.4
+answer: C
+stem: A data team wants every merged change to its Glue jobs to be deployed to test, run on a sample batch with data quality checks, and promoted to production only if checks pass. What should it build?
+A: A cron job on an EC2 instance that copies scripts to production every night || There are no tests or gates, and every change reaches production.
+B: A shared S3 folder where engineers drop updated scripts for production || This is manual, with no testing or promotion process.
+C: A CodePipeline that deploys to test, runs integration checks, then promotes || CI/CD automates deployment, testing, and gated promotion.
+D: A weekly meeting where engineers decide which scripts to copy to production || Manual decisions are slow and not tied to test results.
+explain: Automated test-then-promote pipelines are continuous delivery.
+
+=== M61
+set: mock
+primary: 1.4.10
+secondary: 3.4.5, 1.4.3, 1.4.11
+answer: D
+stem: A developer's PySpark job calls collect() on a 300 GB DataFrame to build a Python dictionary for lookups, and the driver runs out of memory. What should the developer do?
+A: Increase the driver's memory to 512 GB so the collect succeeds || Fragile and expensive, and the driver remains a bottleneck.
+B: Increase the executor count so collect() finishes faster || collect() still moves every row to the driver.
+C: Write the DataFrame to CSV and read it back in a single Python process || This also puts all data in one process.
+D: Express the lookup as a distributed join, broadcasting the small side if one exists || The work stays spread across executors instead of one driver.
+explain: Keep work distributed. Join instead of collecting to the driver.
+
+=== M62
+set: mock
+primary: 1.4.11
+secondary: 1.3.1
+answer: B
+stem: An orchestration tool must run tasks only after all their upstream tasks complete, and must reject any configuration where tasks depend on each other in a loop. Which data structure models this?
+A: A hash map from task names to their scheduled start times || A map stores lookups, not dependencies between tasks.
+B: A directed acyclic graph of tasks with dependency edges || Edges express dependencies, and "acyclic" forbids loops.
+C: A first-in, first-out queue of tasks sorted by when they were created || A queue has no concept of multiple upstream dependencies.
+D: A balanced binary tree of tasks ordered by their priority values || A tree allows only one parent, but tasks can have several dependencies.
+explain: Task dependencies without loops form a DAG, which is what Airflow uses.
+
+=== M63
+set: mock
+primary: 2.1.8
+secondary: 2.1.3
+answer: C
+stem: A vector index over 50 million embeddings must be rebuilt every night, and the servers have limited memory. The team accepts somewhat lower recall in exchange for faster builds. Which index type fits best?
+A: HNSW with a high ef_construction value for maximum graph quality || HNSW uses more memory and builds more slowly, especially at high ef_construction.
+B: Exact flat search, comparing each query with every stored vector || No build, but queries over 50 million vectors would be very slow.
+C: IVF, which clusters vectors and searches nearby clusters || IVF builds faster and uses less memory, trading some recall.
+D: A B-tree index on the first dimension of each embedding vector || B-trees order single values and do not perform similarity search.
+explain: Limited memory and fast rebuilds favor IVF. Best query recall with memory to spare favors HNSW.
+
+=== M64
+set: mock
+primary: 2.2.5
+secondary: 1.2.2
+answer: A, B
+stem: A crawler must catalog tables in an Aurora MySQL database in a private subnet. The crawler fails to connect.
+A: Create a Glue connection with the JDBC URL, VPC, subnet, and security group || Crawlers reach JDBC sources through a Glue connection with network settings.
+B: Allow the connection's security group inbound on 3306 and to itself on all TCP ports || Aurora MySQL listens on 3306, and Glue needs the self-referencing rule.
+C: Grant the crawler role Lake Formation SELECT on the database's tables || The tables are not cataloged yet, and this does not open the network path.
+D: Add an S3 gateway endpoint to the database subnet's route tables || The crawler is connecting to Aurora, not to S3.
+E: Turn on Aurora Serverless v2 so the database accepts public connections || Serverless capacity does not change network reachability.
+explain: JDBC crawlers need a Glue connection and correct security group rules.
+
+=== M65
+set: mock
+primary: 2.3.4
+secondary: 2.1.2
+answer: D
+stem: A DynamoDB table stores session tokens that must stop being returned 24 hours after creation. Developers set a TTL attribute to creation time plus 24 hours, but expired items still appear in query results for a while. What should they do?
+A: Reduce the TTL value to 12 hours so items are deleted before 24 hours || Deletion timing is still not exact, and tokens would expire early.
+B: Run a scheduled Lambda function that scans and deletes every expired item || This costs write capacity, and TTL already handles deletion.
+C: Turn on DynamoDB Streams so expired items are removed from queries sooner || Streams record changes. They do not change when TTL deletes items.
+D: Keep TTL for cleanup and filter out expired items in queries || TTL deletes typically within a few days, so reads must filter expired items.
+explain: TTL deletion is asynchronous. Filter expired items in reads when timing matters.

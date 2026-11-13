@@ -1,0 +1,400 @@
+# Full mock source, part 1 (questions 1 to 33).
+
+=== M01
+set: mock
+primary: 1.1.2
+secondary: 2.1.4, 1.1.3
+answer: B
+stem: A partner uploads daily instrument exports to an on-premises NFS share. The lab wants the files copied to S3 every night, with only changed files transferred and integrity verified, without writing scripts. Which service should it use?
+A: AWS Transfer Family with an SFTP endpoint that the partner's share pushes files to || Transfer Family receives files from clients over SFTP. It does not pull from an NFS share on a schedule.
+B: AWS DataSync with an agent on premises and a scheduled task to the S3 bucket || DataSync copies changed files from NFS to S3 on a schedule and verifies integrity.
+C: AWS DMS with a full load task that treats the NFS share as a source endpoint || DMS migrates databases. It does not read file shares.
+D: Amazon AppFlow with a scheduled flow from the file share to the S3 bucket || AppFlow connects SaaS applications, not on-premises file shares.
+explain: A file share moved to S3 on a schedule with incremental transfer is DataSync.
+
+=== M02
+set: mock
+primary: 2.1.3
+secondary: 2.1.1
+answer: C
+stem: An instrument control API must read the current configuration for a device in microseconds at very high request rates. The data must survive node failures without a separate database behind it. Which store fits best?
+A: Amazon ElastiCache for Valkey in front of an Aurora PostgreSQL cluster || This works but adds a second system, and the cache is not the durable copy.
+B: Amazon DynamoDB with on-demand capacity and strongly consistent reads || DynamoDB gives single-digit millisecond reads, not microsecond reads.
+C: Amazon MemoryDB as the primary database for device configuration || MemoryDB serves microsecond reads from memory and keeps data durable with a Multi-AZ transaction log.
+D: Amazon Redshift with the configuration table using DISTSTYLE ALL || A warehouse is built for scans, not microsecond single-key lookups.
+explain: Microsecond reads plus durability, with no separate database, is MemoryDB.
+
+=== M03
+set: mock
+primary: 3.1.3
+secondary: 3.1.4
+answer: A
+stem: A Python script must list all objects under a prefix that holds 30,000 files and start a Glue job for each date found. A first version only processed 1,000 files. What should the engineer change?
+A: Use the Boto3 paginator for list_objects_v2 to read every page of results || List calls return at most 1,000 keys per response. A paginator follows the continuation tokens.
+B: Raise the MaxKeys parameter on list_objects_v2 to 30,000 in a single request || S3 caps each list response at 1,000 keys regardless of MaxKeys.
+C: Switch to the S3 Select API so the script reads the bucket listing as one CSV || S3 Select queries the contents of one object. It does not list objects.
+D: Call the Glue StartCrawler API instead and read the file list from CloudTrail || This is indirect, slow, and does not give a reliable list of keys.
+explain: SDK list operations are paginated. Use paginators to read every page.
+
+=== M04
+set: mock
+primary: 4.2.5
+secondary: 4.2.6
+answer: D
+stem: A company adds new research projects every week. Each project's S3 objects are tagged with project=<name>, and each researcher's IAM role is tagged with the projects they belong to. Security wants one policy that keeps working as projects are added. Which approach fits?
+A: Create a new IAM policy for every project and attach it to the members' roles || One policy per project is the maintenance burden the team wants to avoid.
+B: Create one IAM group per project and add each researcher's IAM user to it || Groups still need one policy per project, and roles are preferred over users.
+C: Use a bucket policy that lists every researcher's role ARN under each prefix || The list must be edited every time a person or project changes.
+D: Use an ABAC condition matching the object's project tag to the role's tag || One policy compares tags, so new projects work by tagging, with no policy changes.
+explain: Attribute-based access control scales with tags instead of new policies.
+
+=== M05
+set: mock
+primary: 1.1.3
+secondary: 2.3.1
+answer: C
+stem: A nightly Redshift load must include exactly the 48 files that an upstream job produced for the day. Last week a late file was silently skipped because COPY loaded whatever was under the prefix at the time. What should the engineer change?
+A: Add a sleep step of 30 minutes before the COPY so late files have time to arrive || A delay guesses at timing and still does not guarantee all 48 files are present.
+B: Split each file into smaller parts so the COPY finishes before late files arrive || Smaller files speed the load but do nothing to ensure completeness.
+C: Have the upstream job write a manifest of all 48 files, then COPY with MANIFEST || A manifest names the exact files, and COPY fails if a listed file is missing.
+D: Run a crawler on the prefix before the COPY to register the files in the catalog || The catalog does not control which files COPY loads from a prefix.
+explain: A manifest makes a batch load exact and fail-safe.
+
+=== M06
+set: mock
+primary: 2.2.6
+secondary: 4.5.6
+answer: A
+stem: Analysts across the company cannot find trusted datasets and keep asking the data team what columns mean and who owns them. Leadership wants a searchable catalog with business definitions, owners, and a request-and-approve process for access. What should the data team use?
+A: Amazon SageMaker Catalog with glossary terms, metadata forms, and subscription requests || SageMaker Catalog is a business catalog with definitions, ownership, and access workflows.
+B: The AWS Glue Data Catalog with table descriptions filled in by a weekly crawler || A crawler infers technical schema. It cannot supply business meaning or approvals.
+C: A Confluence page per dataset with a form that emails the data team for access || This is manual, unsearchable across tools, and not tied to actual permissions.
+D: Lake Formation LF-Tags on each table plus an SNS topic for access requests || LF-Tags manage permissions, not discovery, definitions, or an approval workflow.
+explain: Business meaning, ownership, and access requests belong in a business catalog.
+
+=== M07
+set: mock
+primary: 3.3.7
+secondary: 4.4.2
+answer: A, D
+stem: An audit finds that 400 CloudWatch log groups created by Lambda and Glue keep data forever, and log storage cost is rising. Security requires one year of retention for every existing group and for every group created in future.
+A: Set a 365-day retention period on every existing log group || Retention removes events older than the period from existing groups.
+B: Change the log class of each existing group to Essentials || The class cannot change after creation, and it does not set retention.
+C: Export all groups to S3 nightly and delete the original groups || Lambda and Glue recreate the groups, which again keep data forever.
+D: Create log groups with 365-day retention in the IaC templates || Groups defined in templates start with the right retention instead of the default.
+E: Add a metric filter on each group that alarms on stored bytes || An alarm reports growth but does not set retention.
+explain: Log groups keep data forever by default. Fix existing groups and set retention where new groups are created.
+
+=== M08
+set: mock
+primary: 4.1.3
+secondary: 4.2.2
+answer: C
+stem: A Glue job connects to Aurora PostgreSQL using a username and password stored in the job's script. Security requires the password to rotate every 30 days automatically, with no code changes after each rotation. What should the team do?
+A: Store the password as a Parameter Store SecureString and update it with a scheduled script || Parameter Store has no built-in rotation, so someone must maintain the script.
+B: Store the password in an encrypted environment variable on the Glue job definition || Environment variables do not rotate, and changing them means redeploying the job.
+C: Store it in Secrets Manager with managed rotation and read the secret from the job || Secrets Manager rotates Aurora credentials automatically, and the job always reads the current value.
+D: Create a new IAM user for the job every 30 days and delete the previous user || IAM users do not hold database passwords, and this does not change the database login.
+explain: Automatic credential rotation for databases is Secrets Manager.
+
+=== M09
+set: mock
+primary: 1.1.5
+secondary: 3.1.9
+answer: D
+stem: A Glue job must run at 06:15 every weekday in the lab's local time zone, and the schedule must adjust automatically for daylight saving time. Which option meets this with the least effort?
+A: A Glue trigger with a cron expression written in UTC for the winter offset || UTC cron does not shift for daylight saving, so the run time moves by an hour twice a year.
+B: A Lambda function that sleeps until 06:15 local time and then starts the job || Lambda stops after 15 minutes and this design is fragile.
+C: An EventBridge rule with a rate expression of one day that starts the Glue job || A rate expression cannot target a time of day or skip weekends.
+D: An EventBridge Scheduler schedule with a cron expression and a time zone || Scheduler supports time zones, so the run stays at 06:15 local time all year.
+explain: EventBridge Scheduler supports cron expressions in a named time zone.
+
+=== M10
+set: mock
+primary: 2.3.6
+secondary: 2.3.4
+answer: A, D
+stem: A curated bucket must survive a Regional outage with a copy elsewhere within 15 minutes of each write. Engineers must also be able to recover from accidental overwrites in the primary bucket.
+A: Enable Cross-Region Replication with Replication Time Control to a bucket in another Region || RTC replicates 99.9% of objects within 15 minutes, with a second copy in another Region.
+B: Enable S3 Transfer Acceleration on the primary bucket || This speeds uploads over long distances. It does not create a copy.
+C: Add a lifecycle rule that transitions objects to Glacier after one day || This changes storage class only and makes recovery slower.
+D: Enable S3 Versioning on the source and destination buckets || Replication requires versioning, and versions allow recovery from overwrites.
+E: Use S3 Batch Operations to copy all objects to another Region weekly || A weekly copy cannot meet a 15-minute objective.
+explain: A replication time objective is RTC. Versioning is required for replication and gives overwrite recovery.
+
+=== M11
+set: mock
+primary: 3.1.6
+secondary: 3.2.2
+answer: B
+stem: A team of analysts with no coding skills must clean a weekly supplier extract: remove duplicate rows, split a combined name column, and standardize date formats. They want to reuse the same steps every week. What should they use?
+A: A Glue Spark job written by the analysts in PySpark from a notebook template || This requires coding, which the analysts cannot do.
+B: AWS Glue DataBrew, saving the steps as a recipe that a scheduled job applies || DataBrew offers visual transforms saved as reusable recipes and run by scheduled jobs.
+C: An Athena CTAS query that the analysts copy and edit each week || This still requires SQL, and manual edits invite errors.
+D: Amazon QuickSight with calculated fields that clean the data during visualization || Calculated fields affect a dashboard, not a reusable cleaned dataset.
+explain: No-code, repeatable cleaning steps fit DataBrew recipes.
+
+=== M12
+set: mock
+primary: 4.1.5
+secondary: 1.1.8
+answer: B, C
+stem: Glue jobs in private subnets write to S3. The VPC has no internet gateway or NAT gateway. Security also requires that the curated bucket accept requests only from this VPC.
+A: Add a NAT gateway and allow its Elastic IP in the bucket policy || This adds internet routing that the design avoids.
+B: Create an S3 gateway endpoint and add it to the subnets' route tables || The gateway endpoint gives the jobs a private route to S3.
+C: Add a bucket policy that denies requests without that aws:SourceVpce || The condition rejects any request that did not come through the endpoint.
+D: Create an interface endpoint for Glue and allow the Glue service principal || This does not give the jobs a route to S3 or restrict the source of requests.
+E: Turn on Transfer Acceleration and require aws:SecureTransport || Acceleration uses edge locations over the internet, and TLS does not restrict the source.
+explain: Private S3 access from a VPC is a gateway endpoint, and aws:SourceVpce restricts the bucket to it.
+
+=== M13
+set: mock
+primary: 1.1.6
+secondary: 1.3.2
+answer: A
+stem: Every object uploaded under s3://lab-raw/runs/ must start a validation workflow. The team also wants other teams to subscribe to the same upload events later without changing the bucket configuration. What should the engineer set up?
+A: Turn on EventBridge notifications for the bucket and add a rule for the prefix || EventBridge rules filter by prefix, and new rules can add subscribers without touching the bucket.
+B: Configure an S3 event notification that invokes the validation Lambda directly || This works for one target, but each new subscriber means editing the bucket notification.
+C: Schedule a Lambda function every minute that lists new objects under the prefix || Polling adds delay and cost, and listing can miss or repeat objects.
+D: Configure CloudTrail data events and have the workflow read the trail files || Trail files arrive minutes later and require parsing.
+explain: EventBridge decouples the bucket from consumers. Add rules, not bucket settings.
+
+=== M14
+set: mock
+primary: 2.4.3
+secondary: 1.1.2
+answer: D
+stem: A lab is moving an on-premises Oracle database with hundreds of stored procedures to Aurora PostgreSQL. It needs an assessment of what converts automatically, the converted schema, and then ongoing row replication until cutover. Which combination should it use?
+A: AWS DataSync to copy the Oracle data files and then attach them to Aurora || Database files are engine-specific and cannot be attached to a different engine.
+B: AWS Glue crawlers on the Oracle schema, then Glue ETL jobs for every table || Crawlers do not convert stored procedures, and Glue jobs do not replicate ongoing changes.
+C: AWS DMS full load and CDC alone, letting DMS create the target tables || DMS moves rows but does not convert stored procedures or report what needs manual work.
+D: DMS Schema Conversion for assessment and conversion, then DMS full load plus CDC || Schema conversion handles structure and code. Replication moves and syncs rows until cutover.
+explain: Heterogeneous migrations need schema conversion and data replication, as two steps.
+
+=== M15
+set: mock
+primary: 3.2.1
+secondary: 3.2.3
+answer: C
+stem: Managers need an interactive dashboard of daily sequencing output that loads in under two seconds for hundreds of users. The data is refreshed once each morning in Athena. Querying Athena on every page view is slow and adds cost. What should the team do?
+A: Point QuickSight at Athena with direct query and enable Athena query result reuse || Each dashboard view still sends queries to Athena.
+B: Export the data to CSV each morning and email it to the managers || This is not an interactive dashboard.
+C: Import the dataset into QuickSight SPICE with a scheduled refresh each morning || SPICE serves dashboards from memory, and a daily refresh matches the data's update schedule.
+D: Build the dashboard in OpenSearch Dashboards over a copy of the Athena tables || OpenSearch fits search and log analytics, not BI dashboards over warehouse-style tables.
+explain: Fast dashboards over data that changes once a day fit SPICE with a scheduled refresh.
+
+=== M16
+set: mock
+primary: 4.1.4
+secondary: 4.1.2
+answer: B
+stem: A developer starts a Glue job from the console, and it fails reading S3 with AccessDenied. The developer's own role can read the bucket. Which identity's permissions should the engineer fix?
+A: The developer's IAM role, because it started the job from the console || Starting a job only needs glue:StartJobRun. The job itself does not run as the developer.
+B: The job's execution role, which Glue assumes to read and write the data || Glue assumes the execution role, so that role needs S3 and any KMS permissions.
+C: The Glue service-linked role, because it performs all S3 reads for jobs || Jobs use the execution role you assign, not a service-linked role, for data access.
+D: The bucket owner's root user, because only it can grant cross-service access || The bucket policy or IAM policy grants access. The root user is not involved.
+explain: Always follow the identity that runs the work, which for Glue is the job's execution role.
+
+=== M17
+set: mock
+primary: 1.1.8
+secondary: 4.1.1
+answer: D
+stem: A Glue job in a private subnet must call a partner's REST API. The partner only accepts connections from IP addresses on its allowlist and asks for one fixed address. What should the engineer set up?
+A: An interface VPC endpoint for the partner's API in the job's subnets || Interface endpoints serve AWS services and PrivateLink providers, not an arbitrary internet API.
+B: An Elastic IP address attached directly to the Glue job's network interface || Glue manages its network interfaces in private subnets. You cannot attach public IPs to them.
+C: An S3 gateway endpoint with a route to the partner's API address range || Gateway endpoints only route to S3 or DynamoDB.
+D: A NAT gateway with an Elastic IP for the private subnet's internet traffic || All outbound traffic leaves through the NAT gateway's fixed Elastic IP, which the partner allowlists.
+explain: Private workloads that need a fixed public source IP go through a NAT gateway with an Elastic IP.
+
+=== M18
+set: mock
+primary: 2.2.3
+secondary: 2.2.1
+answer: A
+stem: A crawler runs on s3://lab-raw/runs/ after each daily load. Instead of one partitioned table, it created a separate table for every date folder. The folders contain files with the same schema. What should the engineer configure?
+A: Set the crawler's table level so the date folders form one table || Setting the table level, or the grouping option, tells the crawler where one table begins.
+B: Change the schema change policy to log changes instead of updating tables || The policy controls updates to existing tables, not how folders map to tables.
+C: Change the recrawl policy so the crawler visits only new folders each day || This reduces work but does not merge folders into one table.
+D: Enable partition projection on each of the date tables the crawler created || Projection does not merge separate tables into one.
+explain: Crawler table grouping decides how folders map to tables.
+
+=== M19
+set: mock
+primary: 3.4.4
+secondary: 3.4.3
+answer: D
+stem: A data quality check samples 1% of rows at random from a daily feed of 2 million rows from 40 suppliers. One small supplier sends 0.2% of rows, and its errors keep reaching production unnoticed. What should the team change?
+A: Increase the random sample from 1% to 2% of all rows in the daily feed || A larger random sample still includes very few rows from the small supplier.
+B: Sample the first 20,000 rows of each file because they arrive first || Arrival order is not random and may still skip the small supplier.
+C: Sample only the largest suppliers because they produce most of the volume || This guarantees the small supplier is never checked.
+D: Stratify the sample by supplier so every supplier contributes enough rows || Stratified sampling draws from each group, so small groups are represented.
+explain: Random samples miss rare groups. Stratify by the group you need to see.
+
+=== M20
+set: mock
+primary: 4.3.4
+secondary: 4.3.2
+answer: B
+stem: A clinical partner requires that donor files be encrypted before they leave its own network, using keys that AWS never sees in plaintext during upload. Files are then stored in S3. What should the partner use?
+A: SSE-KMS with a customer managed key that has automatic rotation enabled || SSE-KMS encrypts after the data reaches S3, not before it leaves the partner.
+B: Client-side encryption, such as the Amazon S3 encryption client, before uploading || Data is encrypted in the partner's environment before transit, so it travels and lands encrypted.
+C: A bucket policy that denies requests where aws:SecureTransport is false || This enforces TLS in transit, but S3 still receives the plaintext file.
+D: SSE-S3 default encryption combined with S3 Object Lock in compliance mode || This protects data at rest after arrival. It is not encryption before transit.
+explain: "Encrypted before it leaves" means client-side encryption.
+
+=== M21
+set: mock
+primary: 1.1.9
+secondary: 2.1.2
+answer: A
+stem: A DynamoDB table in on-demand mode throttles writes during a sensor burst, even though total traffic is far below the table limit. Contributor Insights shows one sensor ID receives most writes. Which change addresses the cause?
+A: Spread that sensor's writes across several partition keys with a suffix || Write sharding spreads one hot key across partitions so no single partition exceeds its limit.
+B: Switch the table to provisioned capacity with much higher write capacity units || Table capacity is not the limit. One partition key exceeds what a partition can serve.
+C: Add a global secondary index that uses the sensor ID as its partition key || The index has the same hot key and adds more writes.
+D: Increase the SDK's maximum retry attempts so throttled writes eventually succeed || Retries hide the symptom and add latency without fixing the hot key.
+explain: Throttling below table limits with one dominant key is a hot partition.
+
+=== M22
+set: mock
+primary: 2.1.6
+secondary: 2.3.1
+answer: C
+stem: Two scheduled jobs update the same Redshift summary table every hour. Occasionally one fails with a serializable isolation violation, error 1023. The cluster uses serializable isolation for compliance reasons. What should the engineer do?
+A: Run VACUUM and ANALYZE on the summary table before each job starts || Maintenance improves performance but does not prevent conflicting writes.
+B: Change the summary table to DISTSTYLE ALL so each node has its own copy || Distribution does not affect transaction conflicts.
+C: Start each job's transaction with LOCK on the table so the jobs run one at a time || An explicit lock makes the second job wait instead of conflicting.
+D: Increase the WLM queue's slot count so both jobs get more memory || More memory does not prevent two transactions conflicting.
+explain: Serializable conflicts between writers are solved by serializing them, for example with LOCK, or by retrying.
+
+=== M23
+set: mock
+primary: 3.1.9
+secondary: 1.3.3
+answer: B
+stem: Messages arrive in an SQS queue. Each message must be filtered to keep only sequencing events, enriched by a Lambda function, and delivered to a Step Functions workflow. The team wants no custom polling code. What should the engineer use?
+A: An EventBridge rule on the default bus that matches the queue's messages || SQS messages are not published to an event bus automatically.
+B: EventBridge Pipes with the queue as source, a filter, Lambda enrichment, and the workflow target || Pipes poll the source, filter, enrich, and deliver with no custom code.
+C: A Lambda function that long-polls the queue and calls StartExecution for each message || This is the custom polling code the team wants to avoid.
+D: An SNS topic subscribed to the queue that forwards messages to the workflow || SNS cannot subscribe to an SQS queue, so messages would not flow that way.
+explain: Point-to-point source, filter, enrich, and target with no code is EventBridge Pipes.
+
+=== M24
+set: mock
+primary: 4.2.2
+secondary: 4.1.3
+answer: D
+stem: A Lambda function needs a feature flag, an S3 bucket name, and a third-party API token that the vendor rotates by hand twice a year. The team wants the lowest cost and encrypted storage for the token. Where should the values go?
+A: All three in Secrets Manager, with a rotation Lambda function for each value || Secrets Manager costs more per secret, and rotation adds no value for plain config.
+B: All three as plaintext environment variables on the Lambda function || The token would be stored in plaintext configuration.
+C: The flag and bucket name in Secrets Manager, and the token in environment variables || This is backwards: the secret is the least protected value.
+D: The flag and bucket as Parameter Store parameters, and the token as a SecureString || Parameter Store is low cost for configuration, and SecureString encrypts the token with KMS.
+explain: Use Secrets Manager when you need managed rotation. For config and simple secrets, Parameter Store is cheaper.
+
+=== M25
+set: mock
+primary: 1.1.10
+secondary: 1.1.1, 1.1.11
+answer: C
+stem: Twelve instrument types publish events into one Kinesis stream. A fraud-detection consumer and an archival consumer both read it. The fraud-detection consumer lags because the archival consumer's reads use the shared 2 MB/s per shard. What should the engineer do?
+A: Create a second stream and have every producer write each event to both streams || Producers would double their writes and the streams could diverge.
+B: Increase the stream's retention period so the lagging consumer can catch up later || Retention gives more time but does not add read bandwidth.
+C: Register the fraud-detection consumer for enhanced fan-out on the stream || Enhanced fan-out gives that consumer its own 2 MB/s per shard.
+D: Replace the stream with an SQS standard queue that both consumers poll || Consumers of one queue compete for messages instead of each getting every event.
+explain: Consumers competing for shared read bandwidth is solved by enhanced fan-out.
+
+=== M26
+set: mock
+primary: 2.4.1
+secondary: 2.1.2
+answer: B
+stem: Analysts in Redshift run daily reports that join a 3-billion-row read-count fact table to a 50-row instrument table and a 20-million-row sample table, always joined on sample_id. Which table design reduces data movement during these joins?
+A: DISTSTYLE EVEN on all three tables, with a compound sort key on the fact table's date || EVEN spreads rows round-robin, so large joins redistribute data on every query.
+B: DISTKEY sample_id on the fact and sample tables, with DISTSTYLE ALL or AUTO for instruments || Co-locating the two large tables on the join key avoids redistribution. The tiny table can be copied.
+C: DISTSTYLE ALL on the fact table so every node has the full table for the joins || Copying 3 billion rows to every node multiplies storage and slows loads.
+D: DISTKEY instrument_id on the fact table, since every row references an instrument || A 50-value key concentrates rows on a few slices and causes skew.
+explain: Distribute large tables on their common join key. Small dimensions can go to every node.
+
+=== M27
+set: mock
+primary: 3.3.2
+secondary: 3.3.4, 2.4.4
+answer: A
+stem: A pipeline spans Lambda, Glue, and Redshift. When a dashboard shows wrong totals, engineers spend hours matching log lines across services by timestamp. What should the team add to make issues traceable end to end?
+A: A batch correlation ID written to every log line, output path, and custom metric || One ID ties each batch's records together across every service and output.
+B: Higher log levels, set to DEBUG, in every Lambda function and Glue job || More log lines without a shared identifier make matching harder.
+C: CloudTrail data events on every S3 bucket used by the pipeline || These record object access, not which batch produced which output.
+D: A separate CloudWatch log group per day for each of the three services || Splitting logs by day does not link them across services.
+explain: Traceability comes from a shared identifier carried through every step.
+
+=== M28
+set: mock
+primary: 4.1.7
+secondary: 4.5.7
+answer: C
+stem: A company sets up SageMaker Unified Studio for its sequencing, clinical, and finance divisions. Each division head must control which of their teams can create projects and which tools those projects get, without involving the central admin. How should it be organized?
+A: One AWS account per division, each with its own separate Unified Studio domain || Separate domains break shared discovery across the company.
+B: One project per division, with every team in the division added as a member || Projects are team workspaces, not a way to delegate administration.
+C: One domain, with a domain unit per division whose owner sets project policies || Domain units delegate authority so each owner controls project creation and profiles.
+D: One domain, with IAM groups per division attached to the domain's admin role || This gives every division full admin rights, not scoped delegation.
+explain: Domain units delegate administration to business units inside one domain.
+
+=== M29
+set: mock
+primary: 1.2.1
+secondary: 1.2.5
+answer: D
+stem: A genomics team runs thousands of containerized alignment jobs each night. Each job needs 4 vCPUs and 16 GB of memory and runs 20 to 90 minutes. Jobs can be interrupted and retried. The team wants managed queuing with the lowest compute cost. What should it use?
+A: AWS Lambda with container images, one invocation for each alignment job || Lambda stops at 15 minutes, and many jobs run longer.
+B: An Amazon ECS service with a fixed number of tasks on On-Demand instances || A service keeps tasks running continuously and does not queue batch jobs.
+C: Amazon EKS with a self-managed job scheduler on On-Demand nodes || This works but adds Kubernetes operations and costs more than Spot.
+D: AWS Batch job queues on a Spot compute environment with retry strategies || Batch queues and schedules containers, and Spot cuts cost for interruptible jobs.
+explain: Queued containerized batch work that tolerates interruption fits AWS Batch on Spot.
+
+=== M30
+set: mock
+primary: 2.4.2
+secondary: 2.2.3
+answer: A
+stem: A supplier says next month its feed will rename the column read_cnt to reads and change sample_id from integer to string. Dozens of Athena queries and two Glue jobs read the table. What is the safest rollout?
+A: Version the dataset, update readers to handle both formats, validate, then switch || A versioned, tested transition avoids breaking readers mid-rollout.
+B: Let the nightly crawler update the table schema automatically when the feed changes || The crawler would change types under existing readers and break queries without warning.
+C: Ask the supplier to delay forever and reject any file with the new column names || This blocks a necessary change instead of managing it.
+D: Edit the table definition on the day of the change and fix queries as they fail || Breaking changes without preparation cause failed jobs and wrong results.
+explain: Breaking schema changes need a contract, a transition period, and validation.
+
+=== M31
+set: mock
+primary: 3.3.5
+secondary: 4.4.1, 4.5.4
+answer: B
+stem: Someone changed the bucket policy on the curated bucket yesterday and removed a deny statement. Security needs to know which principal made the change and from which IP address. The account has default settings. Where should they look?
+A: S3 server access logs for the curated bucket from yesterday || Server access logging is off by default, so yesterday's request was not recorded.
+B: CloudTrail Event history for the PutBucketPolicy event yesterday || Management events are recorded by default for 90 days, with the principal and source IP.
+C: AWS Config rules evaluations for the curated bucket from yesterday || Config shows configuration history, but CloudTrail identifies who made the API call.
+D: CloudWatch Logs Insights over the Lambda log groups in the account || Application logs do not record S3 control-plane API calls.
+explain: Who called an AWS API is CloudTrail, and management events are on by default.
+
+=== M32
+set: mock
+primary: 4.2.6
+secondary: 4.2.1
+answer: D
+stem: A new Glue job only reads s3://lab-raw/runs/ and writes s3://lab-curated/runs/. A developer attached AmazonS3FullAccess to the job role to make it work quickly. Security asks for least privilege. Which policy should replace it?
+A: AmazonS3ReadOnlyAccess plus a statement allowing s3:PutObject on all buckets || This still allows reading every bucket and writing anywhere.
+B: A policy allowing s3:* on both buckets and every object they contain || Full S3 actions include deletes and policy changes the job does not need.
+C: A policy allowing s3:GetObject and s3:PutObject on all resources in the account || The actions are right but the resources are far too broad.
+D: GetObject on the raw prefix, PutObject on the curated prefix, ListBucket on both buckets || Only the actions needed, on only the needed resources.
+explain: Least privilege scopes both actions and resources to what the job actually does.
+
+=== M33
+set: mock
+primary: 1.2.3
+secondary: 1.2.7
+answer: C
+stem: A Glue job joins instrument records from RDS with run files from S3. In S3, the reads field is sometimes a number and sometimes text. The job fails when writing typed Parquet output. What should the engineer do in the job?
+A: Drop the reads column from the output so the job can finish successfully || The column is required. Dropping data hides the problem.
+B: Cast the RDS columns to string so both sources have the same types everywhere || The type conflict is in the S3 field, and losing types hurts every reader.
+C: Use a DynamicFrame and ResolveChoice to cast reads to a number, quarantining failures || ResolveChoice settles the mixed type, and rows that fail the cast can be kept aside.
+D: Increase the number of workers so the job has more memory to infer the types || Worker count does not fix inconsistent source types.
+explain: Mixed types from one source are a choice type. Resolve them explicitly and quarantine failures.

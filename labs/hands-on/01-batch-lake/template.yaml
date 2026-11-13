@@ -1,0 +1,148 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  DEA-C01 hands-on lab 1. Raw, curated, and Athena results buckets, a Glue database,
+  crawler, and ETL job, and an Athena workgroup with a per-query scan limit.
+
+Parameters:
+  Prefix:
+    Type: String
+    Default: dea-lab1
+    AllowedPattern: "[a-z0-9-]{3,20}"
+    Description: Lowercase prefix for resource names.
+
+Resources:
+  RawBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${Prefix}-raw-${AWS::AccountId}-${AWS::Region}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  CuratedBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${Prefix}-curated-${AWS::AccountId}-${AWS::Region}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  AthenaResultsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${Prefix}-athena-${AWS::AccountId}-${AWS::Region}"
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireQueryResults
+            Status: Enabled
+            ExpirationInDays: 7
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  GlueJobRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: glue.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole
+      Policies:
+        - PolicyName: lab-data-access
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: s3:GetObject
+                Resource: !Sub "${RawBucket.Arn}/*"
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:DeleteObject
+                Resource: !Sub "${CuratedBucket.Arn}/*"
+              - Effect: Allow
+                Action: s3:ListBucket
+                Resource:
+                  - !GetAtt RawBucket.Arn
+                  - !GetAtt CuratedBucket.Arn
+
+  LabDatabase:
+    Type: AWS::Glue::Database
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput:
+        Name: !Sub "${Prefix}_db"
+        Description: Sequencing lab tables for DEA-C01 lab 1
+
+  RawRunsCrawler:
+    Type: AWS::Glue::Crawler
+    Properties:
+      Name: !Sub "${Prefix}-raw-runs"
+      Role: !GetAtt GlueJobRole.Arn
+      DatabaseName: !Ref LabDatabase
+      TablePrefix: raw_
+      Targets:
+        S3Targets:
+          - Path: !Sub "s3://${RawBucket}/runs/"
+      SchemaChangePolicy:
+        UpdateBehavior: LOG
+        DeleteBehavior: LOG
+
+  CurateRunsJob:
+    Type: AWS::Glue::Job
+    Properties:
+      Name: !Sub "${Prefix}-curate-runs"
+      Role: !GetAtt GlueJobRole.Arn
+      GlueVersion: "5.0"
+      WorkerType: G.1X
+      NumberOfWorkers: 2
+      Timeout: 30
+      ExecutionClass: FLEX
+      Command:
+        Name: glueetl
+        PythonVersion: "3"
+        ScriptLocation: !Sub "s3://${RawBucket}/scripts/curate_runs.py"
+      DefaultArguments:
+        "--job-language": python
+        "--DATABASE": !Ref LabDatabase
+        "--SOURCE_TABLE": raw_runs
+        "--CURATED_PATH": !Sub "s3://${CuratedBucket}/runs/"
+        "--QUARANTINE_PATH": !Sub "s3://${CuratedBucket}/quarantine/runs/"
+
+  AnalystWorkGroup:
+    Type: AWS::Athena::WorkGroup
+    Properties:
+      Name: !Sub "${Prefix}-analysts"
+      RecursiveDeleteOption: true
+      WorkGroupConfiguration:
+        EnforceWorkGroupConfiguration: true
+        PublishCloudWatchMetricsEnabled: true
+        BytesScannedCutoffPerQuery: 1073741824
+        ResultConfiguration:
+          OutputLocation: !Sub "s3://${AthenaResultsBucket}/results/"
+          EncryptionConfiguration:
+            EncryptionOption: SSE_S3
+
+Outputs:
+  RawBucketName:
+    Value: !Ref RawBucket
+  CuratedBucketName:
+    Value: !Ref CuratedBucket
+  AthenaResultsBucketName:
+    Value: !Ref AthenaResultsBucket
+  DatabaseName:
+    Value: !Ref LabDatabase
+  WorkGroupName:
+    Value: !Ref AnalystWorkGroup
