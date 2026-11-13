@@ -20,10 +20,11 @@
 | [SQL for validation, deduplication, and loading](sql-patterns.md) | Start by stating the grain of the dataset. If one row should represent one event, every join and merge should preserve or intentionally change that grain. |
 | [IAM, KMS, credentials, and network access](security.md) | Follow the identity that actually executes the operation. A successful launch from your console only proves that your identity could start the job. |
 | [Lake Formation, Macie, and CloudTrail](governance.md) | Governance answers who can see the data, what they can see, and how you can review what happened later. |
-| [APIs, Lambda, and deployments](pipeline-engineering.md) | Pagination, throttling, SQS, concurrency, CI/CD, and infrastructure as code |
+| [APIs and deployment fundamentals](pipeline-engineering.md) | Pagination, throttling, distributed processing, and repeatable deployments |
 | [Data modeling and schema evolution](data-modeling.md) | Grain, warehouse facts, DynamoDB keys, migration, and lineage |
 | [Iceberg](iceberg.md) | Snapshots, compaction, partition evolution, and retention |
 | [Vectors and LLMs](vectors-and-llms.md) | Embeddings, index choices, and document processing |
 | [Business catalogs and Unified Studio](catalog-and-unified-studio.md) | Asset discovery, domains, domain units, and projects |
 | [Analysis and data preparation](analysis-and-data-prep.md) | DataBrew, visualizations, SQL, and sampling |
 | [Privacy and audit](privacy-and-audit.md) | Masking, key controls, data residency, and audit evidence |
+| [Lambda for data pipelines](lambda.md) | Stream consumers, queue failures, concurrency, and storage |
