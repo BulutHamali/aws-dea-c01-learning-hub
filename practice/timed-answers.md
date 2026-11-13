@@ -261,7 +261,7 @@ Task 3.4. The sampling design should represent small groups. [Review the guide](
 
 ## Question 28 · A
 
-Task 1.3. Each consumer needs a separate delivery path. [Review the guide](../topic-guides/pipeline-engineering.md)
+Task 1.3. Each consumer needs a separate delivery path. [Review the guide](../topic-guides/orchestration.md#alerts-buffers-and-failed-deliveries)
 
 - **A.** Each subscriber has its own buffer and acknowledgment state.
 - **B.** Messages can be processed by either consumer rather than both.
@@ -279,7 +279,7 @@ Task 2.4. Put related readings together with a sortable timestamp. [Review the g
 
 ## Question 30 · B, D
 
-Task 1.4. Isolate the failed item and protect successful writes. [Review the guide](../topic-guides/pipeline-engineering.md)
+Task 1.4. Isolate the failed item and protect successful writes. [Review the guide](../topic-guides/lambda.md#queue-retries-and-duplicate-writes)
 
 - **A.** All messages can become eligible for retry.
 - **B.** The function can identify which records need a retry.
@@ -298,7 +298,7 @@ Task 1.4. Put infrastructure and validation in version control. [Review the guid
 
 ## Question 32 · A, E
 
-Task 1.4. Capacity caps and pre-initialization serve different needs. [Review the guide](../topic-guides/pipeline-engineering.md)
+Task 1.4. Capacity caps and pre-initialization serve different needs. [Review the guide](../topic-guides/lambda.md#reserved-and-provisioned-concurrency)
 
 - **A.** Reserved concurrency sets a function-level ceiling.
 - **B.** Disk capacity does not cap invocations.

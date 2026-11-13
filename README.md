@@ -6,7 +6,7 @@ A practical study path for **AWS Certified Data Engineer – Associate (DEA-C01)
 
 | If you have… | Start here | What to focus on |
 |---|---|---|
-| Four weeks | [Four-week plan](learning-paths/4-week-plan.md) | Follow the weekly path through 23 guides and practice every week |
+| Four weeks | [Four-week plan](learning-paths/4-week-plan.md) | Follow the weekly path through 24 guides and practice every week |
 | One to two weeks | [Diagnostic](practice/diagnostic.md) and [topic index](topic-guides/README.md) | Review the guides tied to your weakest answers |
 | A few days | [Decision guides](decision-guides/README.md) | Explain what requirement makes each service the best fit |
 | A study session today | [Pipeline challenges](practice/pipeline-challenges.md) | Write your reasoning before revealing the answer |
